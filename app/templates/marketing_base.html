@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}SkillConnect{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .nav-marketing{display:flex;align-items:center;justify-content:space-between;padding:20px 48px;position:sticky;top:0;z-index:20;background:rgba(245,246,250,.85);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+    .nav-marketing .brand{display:flex;align-items:center;gap:10px}.nav-marketing .mark{width:32px;height:32px;border-radius:8px;background:var(--ink);color:var(--amber);display:flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700}.nav-marketing .name{font-family:var(--font-display);font-weight:700;font-size:17px}.nav-links{display:flex;gap:34px}.nav-links a{font-size:14px;font-weight:500;color:var(--ink-soft)}.nav-cta{display:flex;gap:12px;align-items:center}
+    .flash-wrap{max-width:1240px;margin:18px auto 0;padding:0 48px}.flash{padding:11px 14px;border-radius:var(--radius-sm);margin-bottom:10px;background:var(--teal-tint);color:var(--teal-dark)}.flash.error{background:var(--danger-tint);color:var(--danger)}.flash.warning{background:var(--amber-tint);color:var(--amber-dark)}
+    @media(max-width:980px){.nav-marketing{padding:16px 20px}.nav-links{display:none}.flash-wrap{padding:0 20px}}
+  </style>
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <nav class="nav-marketing">
+    <a class="brand" href="{{ url_for('main.home') }}"><span class="mark">S</span><span class="name">SkillConnect</span></a>
+    <div class="nav-links"><a href="#how">How it works</a><a href="#roles">For campuses</a></div>
+    <div class="nav-cta">{% if current_user.is_authenticated %}<form method="post" action="{{ url_for('auth.logout') }}"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn btn-ghost btn-sm">Log out</button></form>{% else %}<a href="{{ url_for('auth.login') }}" class="btn btn-ghost btn-sm">Log in</a><a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm">Get started free</a>{% endif %}</div>
+  </nav>
+  {% include 'partials/flashes.html' %}
+  {% block content %}{% endblock %}
+</body>
+</html>

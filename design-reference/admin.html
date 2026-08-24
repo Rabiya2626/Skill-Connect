@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin console — SkillConnect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin-bottom: 22px; }
+  .tab { padding: 11px 16px; font-size: 13.5px; font-weight: 500; color: var(--slate); border-bottom: 2px solid transparent; margin-bottom: -1px; }
+  .tab.is-active { color: var(--ink); border-color: var(--ink); }
+
+  .table-card { padding: 0; overflow: hidden; }
+  .table-head { display:flex; align-items:center; justify-content: space-between; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .table-head h2 { font-size: 14.5px; margin: 0; }
+  .row-user { display:flex; align-items:center; gap: 10px; }
+  .row-user .n { font-weight: 600; font-size: 13px; }
+  .row-user .e { font-size: 11.5px; color: var(--slate-light); }
+  .actions-cell { display: flex; gap: 8px; }
+
+  .approve-card { display: flex; align-items: center; gap: 14px; padding: 16px 20px; border-bottom: 1px solid var(--line); }
+  .approve-card:last-child { border-bottom: none; }
+  .approve-card .info { flex: 1; }
+  .approve-card .n { font-weight: 600; font-size: 13.5px; }
+  .approve-card .s { font-size: 12px; color: var(--slate); margin-top: 2px; }
+  .approve-card .btns { display: flex; gap: 8px; }
+
+  .report-item { display:flex; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .report-item:last-child { border-bottom: none; }
+  .report-item .sev { width: 28px; height: 28px; border-radius: 50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .report-item .t { font-size: 13px; font-weight: 500; }
+  .report-item .d { font-size: 12px; color: var(--slate); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div class="mark">S</div><div class="name">SkillConnect</div></div>
+    <div class="nav-section">
+      <div class="nav-label">Admin console</div>
+      <div class="nav-item is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Overview</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>Users</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20l9-5-9-5-9 5 9 5z"/><path d="M12 12L3 7l9-5 9 5-9 5z"/></svg>Skills catalog</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>Tutor approvals<span class="count">6</span></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>Reports<span class="count">4</span></div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18M18 17V9M13 17V5M8 17v-4"/></svg>Platform activity</div>
+    </div>
+    <div class="sidebar-foot">
+      <div class="avatar">AD</div>
+      <div class="who"><span class="n">Anita Desai</span><span class="r">Platform Admin</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="search-field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Search users, skills, or reports…
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn"><span class="dot"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></button>
+        <a href="#" class="btn btn-primary btn-sm">Export report</a>
+      </div>
+    </div>
+
+    <div class="content">
+      <span class="eyebrow">Admin console</span>
+      <h1 style="font-size: 26px; margin-top:10px;">Platform overview</h1>
+
+      <div class="stat-grid" style="margin-top:20px;">
+        <div class="card stat-card">
+          <div class="top"><div class="icon" style="background:var(--teal-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-dark)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg></div></div>
+          <div class="value">4,180</div>
+          <div class="label">Total registered users</div>
+          <div class="delta delta-up">↑ 6.2% this month</div>
+        </div>
+        <div class="card stat-card">
+          <div class="top"><div class="icon" style="background:var(--amber-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--amber-dark)" stroke-width="2"><path d="M12 20l9-5-9-5-9 5 9 5z"/><path d="M12 12L3 7l9-5 9 5-9 5z"/></svg></div></div>
+          <div class="value">920</div>
+          <div class="label">Skills listed</div>
+          <div class="delta delta-up">↑ 48 new this week</div>
+        </div>
+        <div class="card stat-card">
+          <div class="top"><div class="icon" style="background:var(--teal-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-dark)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div></div>
+          <div class="value">316</div>
+          <div class="label">Sessions booked this week</div>
+          <div class="delta delta-up">↑ 12% vs last week</div>
+        </div>
+        <div class="card stat-card">
+          <div class="top"><div class="icon" style="background:var(--danger-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--danger)" stroke-width="2"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg></div></div>
+          <div class="value">4</div>
+          <div class="label">Open reports</div>
+          <div class="delta muted">2 flagged as urgent</div>
+        </div>
+      </div>
+
+      <div class="tabs" style="margin-top:32px;">
+        <div class="tab is-active">User management</div>
+        <div class="tab">Tutor approvals</div>
+        <div class="tab">Reports</div>
+        <div class="tab">Skills catalog</div>
+      </div>
+
+      <div class="card table-card">
+        <div class="table-head">
+          <h2>All users <span class="muted mono" style="font-weight:400; font-size:12px;">4,180 total</span></h2>
+          <div class="flex gap-8">
+            <select class="sort-select" style="font-size:12.5px; border:1px solid var(--line-strong); border-radius:6px; padding:6px 10px;"><option>All roles</option><option>Learners</option><option>Tutors</option></select>
+            <a href="#" class="btn btn-outline btn-sm">+ Add admin</a>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>User</th><th>Role</th><th>Skills listed</th><th>Rating</th><th>Status</th><th>Joined</th><th></th></tr></thead>
+          <tbody>
+            <tr>
+              <td><div class="row-user"><div class="avatar-circle" style="width:30px;height:30px;background:var(--teal-tint);color:var(--teal-dark);font-size:11px;">PS</div><div><div class="n">Priya Sharma</div><div class="e">priya.sharma@university.edu</div></div></div></td>
+              <td>Tutor · Learner</td><td>3</td><td>★ 5.0</td>
+              <td><span class="badge badge-teal">Active</span></td><td class="mono">Jan 2025</td>
+              <td class="actions-cell"><a href="#" class="btn btn-ghost btn-sm">View</a></td>
+            </tr>
+            <tr>
+              <td><div class="row-user"><div class="avatar-circle" style="width:30px;height:30px;background:var(--amber-tint);color:var(--amber-dark);font-size:11px;">DK</div><div><div class="n">Dev Kulkarni</div><div class="e">dev.k@university.edu</div></div></div></td>
+              <td>Learner · Tutor</td><td>2</td><td>★ 4.8</td>
+              <td><span class="badge badge-teal">Active</span></td><td class="mono">Mar 2025</td>
+              <td class="actions-cell"><a href="#" class="btn btn-ghost btn-sm">View</a></td>
+            </tr>
+            <tr>
+              <td><div class="row-user"><div class="avatar-circle" style="width:30px;height:30px;background:var(--line);color:var(--slate);font-size:11px;">??</div><div><div class="n">unclaimed_user_2291</div><div class="e">no verified email</div></div></div></td>
+              <td>Learner</td><td>0</td><td>—</td>
+              <td><span class="badge badge-danger">Flagged</span></td><td class="mono">Jul 2026</td>
+              <td class="actions-cell"><a href="#" class="btn btn-outline btn-sm">Suspend</a></td>
+            </tr>
+            <tr>
+              <td><div class="row-user"><div class="avatar-circle" style="width:30px;height:30px;background:var(--teal-tint);color:var(--teal-dark);font-size:11px;">MR</div><div><div class="n">Maya Reyes</div><div class="e">maya.reyes@university.edu</div></div></div></td>
+              <td>Tutor</td><td>2</td><td>★ 4.9</td>
+              <td><span class="badge badge-teal">Active</span></td><td class="mono">Nov 2024</td>
+              <td class="actions-cell"><a href="#" class="btn btn-ghost btn-sm">View</a></td>
+            </tr>
+            <tr>
+              <td><div class="row-user"><div class="avatar-circle" style="width:30px;height:30px;background:var(--amber-tint);color:var(--amber-dark);font-size:11px;">RN</div><div><div class="n">Rahul Nair</div><div class="e">rahul.nair@university.edu</div></div></div></td>
+              <td>Tutor · Learner</td><td>1</td><td>★ 4.5</td>
+              <td><span class="badge badge-slate">Pending review</span></td><td class="mono">Jul 2026</td>
+              <td class="actions-cell"><a href="#" class="btn btn-ghost btn-sm">View</a></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid-2" style="margin-top:30px;">
+        <div>
+          <div class="section-head" style="margin-top:0;"><h2>Pending tutor approvals</h2><a href="#" class="link">See all (6) →</a></div>
+          <div class="card">
+            <div class="approve-card">
+              <div class="avatar-circle" style="width:36px;height:36px;background:var(--amber-tint);color:var(--amber-dark);font-size:12px;">RN</div>
+              <div class="info"><div class="n">Rahul Nair</div><div class="s">Wants to tutor: Circuits, MATLAB · Submitted 2 days ago</div></div>
+              <div class="btns"><a href="#" class="btn btn-outline btn-sm">Decline</a><a href="#" class="btn btn-primary btn-sm">Approve</a></div>
+            </div>
+            <div class="approve-card">
+              <div class="avatar-circle" style="width:36px;height:36px;background:var(--teal-tint);color:var(--teal-dark);font-size:12px;">SK</div>
+              <div class="info"><div class="n">Sara Kim</div><div class="s">Wants to tutor: Organic Chemistry · Submitted 4 days ago</div></div>
+              <div class="btns"><a href="#" class="btn btn-outline btn-sm">Decline</a><a href="#" class="btn btn-primary btn-sm">Approve</a></div>
+            </div>
+            <div class="approve-card">
+              <div class="avatar-circle" style="width:36px;height:36px;background:var(--amber-tint);color:var(--amber-dark);font-size:12px;">JT</div>
+              <div class="info"><div class="n">Jordan Tate</div><div class="s">Wants to tutor: Music Theory · Submitted 5 days ago</div></div>
+              <div class="btns"><a href="#" class="btn btn-outline btn-sm">Decline</a><a href="#" class="btn btn-primary btn-sm">Approve</a></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-head" style="margin-top:0;"><h2>Recent reports</h2><a href="#" class="link">See all →</a></div>
+          <div class="card panel">
+            <div class="report-item">
+              <div class="sev" style="background:var(--danger-tint);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--danger)" stroke-width="2"><path d="M12 9v4m0 4h.01"/></svg></div>
+              <div><div class="t">Suspected fake account — unclaimed_user_2291</div><div class="d">Reported by 3 users · 1 hour ago</div></div>
+            </div>
+            <div class="report-item">
+              <div class="sev" style="background:var(--amber-tint);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--amber-dark)" stroke-width="2"><path d="M12 9v4m0 4h.01"/></svg></div>
+              <div><div class="t">No-show reported for session #SC-4402</div><div class="d">Filed by Leah Tran · Yesterday</div></div>
+            </div>
+            <div class="report-item">
+              <div class="sev" style="background:var(--line);"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="var(--slate)" stroke-width="2"><path d="M12 9v4m0 4h.01"/></svg></div>
+              <div><div class="t">Duplicate skill listing flagged</div><div class="d">Auto-flagged by system · 2 days ago</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

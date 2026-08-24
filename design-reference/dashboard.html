@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — SkillConnect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .welcome-card {
+    background: var(--ink); border-radius: var(--radius-lg); padding: 28px 30px;
+    display: flex; align-items: center; justify-content: space-between;
+    background-image: radial-gradient(circle at 90% 10%, rgba(232,162,61,0.18), transparent 55%);
+    color: var(--white);
+  }
+  .welcome-card p { color: rgba(255,255,255,0.62); margin: 6px 0 0 0; max-width: 420px; font-size: 13.5px;}
+  .welcome-card h1 { color: var(--white); font-size: 24px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1.4fr 1fr; gap: 20px; align-items: start; }
+
+  .session-row {
+    display: flex; align-items: center; gap: 14px; padding: 14px 16px; border-bottom: 1px solid var(--line);
+  }
+  .session-row:last-child { border-bottom: none; }
+  .session-row .when {
+    width: 58px; text-align: center; flex-shrink: 0;
+    font-family: var(--font-mono);
+  }
+  .session-row .when .d { font-size: 10.5px; color: var(--slate-light); text-transform: uppercase; }
+  .session-row .when .t { font-size: 13px; color: var(--ink); font-weight: 500; }
+  .session-row .who { flex: 1; min-width: 0; }
+  .session-row .who .n { font-weight: 600; font-size: 13.5px; }
+  .session-row .who .s { font-size: 12.5px; color: var(--slate); }
+
+  .match-card { display:flex; gap: 12px; align-items:center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+  .match-card:last-child { border-bottom: none; }
+  .match-card .info { flex:1; min-width:0; }
+  .match-card .info .n { font-weight: 600; font-size: 13.5px; }
+  .match-card .info .tags { display:flex; gap:6px; margin-top: 5px; flex-wrap: wrap; }
+
+  .progress-item { padding: 14px 0; border-bottom: 1px solid var(--line); }
+  .progress-item:last-child { border-bottom: none; }
+  .progress-item .top { display:flex; justify-content: space-between; font-size: 13px; margin-bottom: 8px; }
+  .progress-item .top .pct { font-family: var(--font-mono); color: var(--teal-dark); }
+  .bar { height: 6px; border-radius: 100px; background: var(--line); overflow: hidden; }
+  .bar span { display:block; height:100%; background: var(--teal); border-radius: 100px; }
+
+  .activity-item { display: flex; gap: 12px; padding: 12px 0; }
+  .activity-item .dot-icon { width: 30px; height:30px; border-radius:50%; background: var(--paper); display:flex; align-items:center; justify-content:center; flex-shrink:0; border: 1px solid var(--line); }
+  .activity-item .dot-icon svg { width:14px; height:14px; color: var(--teal-dark); }
+  .activity-item .t { font-size: 13px; }
+  .activity-item .time { font-size: 11.5px; color: var(--slate-light); font-family: var(--font-mono); margin-top: 2px; }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div class="mark">S</div><div class="name">SkillConnect</div></div>
+
+    <div class="nav-section">
+      <div class="nav-item is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Dashboard</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Browse skills</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>My exchanges</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Sessions<span class="count">3</span></div>
+    </div>
+
+    <div class="nav-section">
+      <div class="nav-label">Manage</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20l9-5-9-5-9 5 9 5z"/><path d="M12 12L3 7l9-5 9 5-9 5z"/></svg>My skills</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4v16h16v-7"/><path d="M17.5 3.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 8.5-8.5z"/></svg>Tutor tools</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 17.75l-6.16 3.24 1.18-6.88L2 9.24l6.92-1L12 2l3.08 6.24 6.92 1-5.02 4.87 1.18 6.88z"/></svg>Ratings & feedback</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Notifications<span class="count">5</span></div>
+    </div>
+
+    <div class="sidebar-foot">
+      <div class="avatar">DK</div>
+      <div class="who"><span class="n">Dev Kulkarni</span><span class="r">Learner · Tutor</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="search-field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Search skills, tutors, or sessions…
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn"><span class="dot"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></button>
+        <a href="tutor-profile.html" class="btn btn-outline btn-sm">View my public profile</a>
+        <a href="#" class="btn btn-amber btn-sm">+ Offer a skill</a>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="welcome-card">
+        <div>
+          <span class="eyebrow" style="color: var(--amber);">Welcome back</span>
+          <h1>Good afternoon, Dev.</h1>
+          <p>You have 2 pending session requests and one skill exchange awaiting confirmation.</p>
+        </div>
+        <a href="booking.html" class="btn btn-amber">Review requests →</a>
+      </div>
+
+      <div class="stat-grid" style="margin-top:22px;">
+        <div class="card stat-card">
+          <div class="top"><div class="icon" style="background:var(--teal-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-dark)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div></div>
+          <div class="value">7</div>
+          <div class="label">Sessions this month</div>
+          <div class="delta delta-up">↑ 2 more than last month</div>
+        </div>
+        <div class="card stat-card">
+          <div class="top"><div class="icon" style="background:var(--amber-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--amber-dark)" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg></div></div>
+          <div class="value">3</div>
+          <div class="label">Active skill exchanges</div>
+          <div class="delta muted">1 awaiting confirmation</div>
+        </div>
+        <div class="card stat-card">
+          <div class="top"><div class="icon" style="background:var(--teal-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--teal-dark)" stroke-width="2"><path d="M12 17.75l-6.16 3.24 1.18-6.88L2 9.24l6.92-1L12 2l3.08 6.24 6.92 1-5.02 4.87 1.18 6.88z"/></svg></div></div>
+          <div class="value">4.8</div>
+          <div class="label">Your tutor rating</div>
+          <div class="delta delta-up">↑ 0.2 from last 5 reviews</div>
+        </div>
+        <div class="card stat-card">
+          <div class="top"><div class="icon" style="background:var(--amber-tint);"><svg viewBox="0 0 24 24" fill="none" stroke="var(--amber-dark)" stroke-width="2"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><path d="M22 4L12 14.01l-3-3"/></svg></div></div>
+          <div class="value">12</div>
+          <div class="label">Skills learned to date</div>
+          <div class="delta muted">Across 6 categories</div>
+        </div>
+      </div>
+
+      <div class="grid-2" style="margin-top:8px;">
+        <div>
+          <div class="section-head">
+            <h2>Upcoming sessions</h2>
+            <a href="booking.html" class="link">See all →</a>
+          </div>
+          <div class="card">
+            <div class="session-row">
+              <div class="when"><div class="d">Wed</div><div class="t">4:00 PM</div></div>
+              <div class="who"><div class="n">UI Design in Figma</div><div class="s">Teaching Leah T. · 45 min</div></div>
+              <span class="badge badge-teal">Confirmed</span>
+            </div>
+            <div class="session-row">
+              <div class="when"><div class="d">Thu</div><div class="t">6:30 PM</div></div>
+              <div class="who"><div class="n">Guitar — Barre chords</div><div class="s">Learning from Priya S. · 30 min</div></div>
+              <span class="badge badge-amber">Pending</span>
+            </div>
+            <div class="session-row">
+              <div class="when"><div class="d">Sat</div><div class="t">11:00 AM</div></div>
+              <div class="who"><div class="n">Python — Data structures</div><div class="s">Teaching Owen M. · 60 min</div></div>
+              <span class="badge badge-teal">Confirmed</span>
+            </div>
+          </div>
+
+          <div class="section-head">
+            <h2>Your learning progress</h2>
+            <a href="#" class="link">Full history →</a>
+          </div>
+          <div class="card" style="padding: 16px 20px;">
+            <div class="progress-item">
+              <div class="top"><span>Conversational Spanish</span><span class="pct">68%</span></div>
+              <div class="bar"><span style="width:68%;"></span></div>
+            </div>
+            <div class="progress-item">
+              <div class="top"><span>Guitar fundamentals</span><span class="pct">34%</span></div>
+              <div class="bar"><span style="width:34%;"></span></div>
+            </div>
+            <div class="progress-item">
+              <div class="top"><span>Statistics for Economics</span><span class="pct">91%</span></div>
+              <div class="bar"><span style="width:91%;"></span></div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="section-head">
+            <h2>Suggested matches</h2>
+            <a href="browse.html" class="link">More →</a>
+          </div>
+          <div class="card">
+            <div class="match-card">
+              <div class="avatar-circle" style="width:38px;height:38px;background:var(--teal-tint);color:var(--teal-dark);font-size:13px;">MR</div>
+              <div class="info">
+                <div class="n">Maya Reyes</div>
+                <div class="tags"><span class="badge badge-slate">Spanish</span><span class="badge badge-slate">Writing</span></div>
+              </div>
+            </div>
+            <div class="match-card">
+              <div class="avatar-circle" style="width:38px;height:38px;background:var(--amber-tint);color:var(--amber-dark);font-size:13px;">OM</div>
+              <div class="info">
+                <div class="n">Owen Marsh</div>
+                <div class="tags"><span class="badge badge-slate">Statistics</span><span class="badge badge-slate">Photography</span></div>
+              </div>
+            </div>
+            <div class="match-card">
+              <div class="avatar-circle" style="width:38px;height:38px;background:var(--teal-tint);color:var(--teal-dark);font-size:13px;">LT</div>
+              <div class="info">
+                <div class="n">Leah Tran</div>
+                <div class="tags"><span class="badge badge-slate">Figma</span><span class="badge badge-slate">Branding</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="section-head">
+            <h2>Recent activity</h2>
+          </div>
+          <div class="card" style="padding: 6px 20px;">
+            <div class="activity-item">
+              <div class="dot-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+              <div><div class="t">Priya S. confirmed your session request</div><div class="time">2 hours ago</div></div>
+            </div>
+            <div class="activity-item">
+              <div class="dot-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 17.75l-6.16 3.24 1.18-6.88L2 9.24l6.92-1L12 2l3.08 6.24 6.92 1-5.02 4.87 1.18 6.88z"/></svg></div>
+              <div><div class="t">You received a 5.0 rating from Owen M.</div><div class="time">Yesterday</div></div>
+            </div>
+            <div class="activity-item">
+              <div class="dot-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8z"/></svg></div>
+              <div><div class="t">New exchange proposal from Owen M.</div><div class="time">2 days ago</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

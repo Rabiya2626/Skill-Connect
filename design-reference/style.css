@@ -1,0 +1,401 @@
+/* ==========================================================================
+   SkillConnect — Design System
+   A professional edtech identity built on the idea of skills as currency:
+   sessions and offers are presented as exchange tickets/vouchers, torn
+   between what you give and what you get.
+   ========================================================================== */
+
+:root {
+  /* Color */
+  --ink: #14213D;
+  --ink-2: #1E2E52;
+  --ink-soft: #33456E;
+  --paper: #F5F6FA;
+  --white: #FFFFFF;
+  --amber: #E8A23D;
+  --amber-dark: #B9791F;
+  --amber-tint: #FCEFD9;
+  --teal: #1D7F72;
+  --teal-dark: #146058;
+  --teal-tint: #E1F2EF;
+  --slate: #5B6479;
+  --slate-light: #8991A3;
+  --line: #E3E6EE;
+  --line-strong: #CBD0DE;
+  --danger: #C0483A;
+  --danger-tint: #FBE9E6;
+
+  /* Type */
+  --font-display: 'Space Grotesk', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+
+  /* Layout */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 16px;
+  --shadow-sm: 0 1px 2px rgba(20, 33, 61, 0.06), 0 1px 1px rgba(20, 33, 61, 0.04);
+  --shadow-md: 0 8px 24px rgba(20, 33, 61, 0.10);
+  --shadow-lg: 0 20px 48px rgba(20, 33, 61, 0.16);
+  --sidebar-w: 248px;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  background: var(--paper);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+h1, h2, h3, h4 {
+  font-family: var(--font-display);
+  color: var(--ink);
+  margin: 0 0 .4em 0;
+  letter-spacing: -0.01em;
+  font-weight: 600;
+}
+
+p { margin: 0 0 1em 0; color: var(--slate); }
+a { color: inherit; text-decoration: none; }
+ul { margin: 0; padding: 0; list-style: none; }
+img { max-width: 100%; display: block; }
+button { font-family: inherit; cursor: pointer; }
+
+:focus-visible {
+  outline: 2px solid var(--amber-dark);
+  outline-offset: 2px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--teal-dark);
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.eyebrow::before {
+  content: "";
+  width: 14px;
+  height: 1px;
+  background: var(--teal-dark);
+  display: inline-block;
+}
+
+/* Buttons ---------------------------------------------------------------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  padding: 11px 20px;
+  border-radius: var(--radius-sm);
+  border: 1px solid transparent;
+  transition: transform .15s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+  white-space: nowrap;
+}
+.btn-primary {
+  background: var(--ink);
+  color: var(--white);
+}
+.btn-primary:hover { background: var(--ink-2); box-shadow: var(--shadow-sm); }
+.btn-amber {
+  background: var(--amber);
+  color: var(--ink);
+}
+.btn-amber:hover { background: var(--amber-dark); color: var(--white); }
+.btn-outline {
+  background: transparent;
+  border-color: var(--line-strong);
+  color: var(--ink);
+}
+.btn-outline:hover { border-color: var(--ink); }
+.btn-ghost {
+  background: transparent;
+  color: var(--slate);
+  padding: 8px 12px;
+}
+.btn-ghost:hover { color: var(--ink); }
+.btn-sm { padding: 7px 14px; font-size: 13px; }
+.btn-block { width: 100%; }
+
+/* Badges / chips ---------------------------------------------------------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  padding: 4px 9px;
+  border-radius: 100px;
+  font-weight: 500;
+}
+.badge-teal { background: var(--teal-tint); color: var(--teal-dark); }
+.badge-amber { background: var(--amber-tint); color: var(--amber-dark); }
+.badge-slate { background: var(--line); color: var(--slate); }
+.badge-danger { background: var(--danger-tint); color: var(--danger); }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: 100px;
+  border: 1px solid var(--line-strong);
+  background: var(--white);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  transition: all .15s ease;
+}
+.chip:hover { border-color: var(--ink); }
+.chip.is-active { background: var(--ink); color: var(--white); border-color: var(--ink); }
+
+/* Cards -------------------------------------------------------------------*/
+.card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+/* Signature component: exchange ticket ------------------------------------
+   A voucher-style card: two panels joined by a perforated seam with
+   notch cut-outs, echoing the idea of a skill being "traded". */
+.ticket {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  overflow: visible;
+  transition: box-shadow .18s ease, transform .18s ease;
+}
+.ticket:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+.ticket-notch {
+  position: absolute;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  background: var(--paper);
+  border-radius: 50%;
+  transform: translateY(-50%);
+  border: 1px solid var(--line);
+}
+.ticket-notch.left { left: -9px; }
+.ticket-notch.right { right: -9px; }
+.ticket-seam {
+  border-left: 1.5px dashed var(--line-strong);
+  display: flex;
+  align-items: center;
+}
+.ticket-main { padding: 22px 20px; }
+.ticket-stub {
+  padding: 22px 16px;
+  width: 128px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 6px;
+  background: var(--ink);
+  color: var(--white);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+}
+.ticket-stub .stub-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--amber);
+}
+.ticket-stub .stub-value {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+}
+
+/* App shell (logged-in pages) --------------------------------------------*/
+.app-shell { display: flex; min-height: 100vh; }
+
+.sidebar {
+  width: var(--sidebar-w);
+  flex-shrink: 0;
+  background: var(--ink);
+  color: var(--white);
+  display: flex;
+  flex-direction: column;
+  padding: 24px 16px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 8px 26px 8px;
+}
+.sidebar-brand .mark {
+  width: 30px; height: 30px;
+  border-radius: 8px;
+  background: var(--amber);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700; color: var(--ink);
+  font-size: 15px;
+}
+.sidebar-brand .name { font-family: var(--font-display); font-weight: 600; font-size: 16px; color: var(--white); }
+
+.nav-section { margin-bottom: 22px; }
+.nav-label {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.38);
+  padding: 0 10px;
+  margin-bottom: 8px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  color: rgba(255,255,255,0.72);
+  font-size: 13.5px;
+  font-weight: 500;
+  margin-bottom: 2px;
+  transition: background .15s ease, color .15s ease;
+}
+.nav-item svg { width: 17px; height: 17px; flex-shrink: 0; }
+.nav-item:hover { background: rgba(255,255,255,0.06); color: var(--white); }
+.nav-item.is-active { background: var(--ink-2); color: var(--white); box-shadow: inset 2px 0 0 var(--amber); }
+.nav-item .count {
+  margin-left: auto;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  background: rgba(255,255,255,0.12);
+  padding: 1px 7px;
+  border-radius: 100px;
+}
+
+.sidebar-foot {
+  margin-top: auto;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  padding-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sidebar-foot .avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--amber); display:flex; align-items:center; justify-content:center; font-family: var(--font-display); font-weight:700; color: var(--ink); font-size: 13px;}
+.sidebar-foot .who { font-size: 12.5px; }
+.sidebar-foot .who .n { color: var(--white); font-weight: 600; display:block; }
+.sidebar-foot .who .r { color: rgba(255,255,255,0.5); }
+
+.main {
+  flex: 1;
+  min-width: 0;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 32px;
+  border-bottom: 1px solid var(--line);
+  background: var(--white);
+  position: sticky;
+  top: 0;
+  z-index: 5;
+}
+.search-field {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  width: 340px;
+  color: var(--slate-light);
+  font-size: 13.5px;
+}
+.search-field svg { width: 15px; height: 15px; flex-shrink: 0; }
+.topbar-actions { display: flex; align-items: center; gap: 14px; }
+.icon-btn {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  display: flex; align-items: center; justify-content: center;
+  background: var(--white);
+  position: relative;
+}
+.icon-btn svg { width: 16px; height: 16px; color: var(--ink-soft); }
+.icon-btn .dot { position: absolute; top: 7px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--amber); border: 1.5px solid var(--white); }
+
+.content { padding: 30px 32px 60px 32px; max-width: 1240px; }
+
+/* Stat cards ---------------------------------------------------------------*/
+.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.stat-card { padding: 20px 20px; }
+.stat-card .top { display:flex; align-items:center; justify-content: space-between; margin-bottom: 14px;}
+.stat-card .icon { width: 34px; height: 34px; border-radius: 8px; display:flex; align-items:center; justify-content:center; }
+.stat-card .icon svg { width: 16px; height:16px; }
+.stat-card .value { font-family: var(--font-display); font-size: 28px; font-weight: 600; }
+.stat-card .label { font-size: 12.5px; color: var(--slate); margin-top: 2px; }
+.stat-card .delta { font-family: var(--font-mono); font-size: 11px; margin-top: 10px; }
+.delta-up { color: var(--teal-dark); }
+.delta-down { color: var(--danger); }
+
+/* Section heads ------------------------------------------------------------*/
+.section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 34px 0 16px 0; }
+.section-head h2 { font-size: 18px; }
+.section-head .link { font-size: 13px; font-weight: 600; color: var(--teal-dark); }
+
+/* Tables ---------------------------------------------------------------- */
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--slate-light);
+  font-weight: 500;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+}
+td { padding: 13px 16px; border-bottom: 1px solid var(--line); color: var(--ink-soft); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--paper); }
+
+/* Avatars ------------------------------------------------------------------*/
+.avatar-circle {
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-weight: 700;
+  flex-shrink: 0;
+}
+
+/* Utility --------------------------------------------------------------- */
+.flex { display: flex; }
+.flex-col { display: flex; flex-direction: column; }
+.items-center { align-items: center; }
+.justify-between { justify-content: space-between; }
+.gap-8 { gap: 8px; } .gap-10 { gap: 10px; } .gap-12 { gap: 12px; } .gap-16 { gap: 16px; } .gap-20 { gap: 20px; }
+.muted { color: var(--slate); }
+.mono { font-family: var(--font-mono); }

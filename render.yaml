@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: skillconnect
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app
+    healthCheckPath: /
+    envVars:
+      - key: SECRET_KEY
+        generateValue: true
+      - key: PAYMENT_MODE
+        value: sandbox
+      - key: JITSI_DOMAIN
+        value: meet.jit.si
+      - key: DATABASE_URL
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: RESEND_API_KEY
+        sync: false
+      - key: RESEND_FROM_EMAIL
+        sync: false

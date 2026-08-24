@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+{% block title %}Book a session — SkillConnect{% endblock %}
+{% block content %}
+<div class="booking-shell">
+  <div class="steps-nav">
+    <div class="s active"><div class="b">1</div> Select time</div>
+    <div class="line"></div>
+    <div class="s"><div class="b">2</div> Confirm details</div>
+    <div class="line"></div>
+    <div class="s"><div class="b">3</div> Request sent</div>
+  </div>
+
+  <div class="booking-layout">
+    <section class="card booking-card">
+      <form method="post" class="booking-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="booking-header">
+          <div>
+            <p class="eyebrow">Scheduling</p>
+            <h1>Book a session with {{ tutor.user.name }}</h1>
+            <p class="booking-subtitle">Choose a date and time that fits your week. Your request will be sent to the tutor for approval.</p>
+          </div>
+          <span class="badge badge-teal">60 min</span>
+        </div>
+
+        <div class="booking-grid">
+          <div class="field-group">
+            <label for="skill_id">Skill</label>
+            <select id="skill_id" name="skill_id">
+              {% for skill in skills %}
+              <option value="{{ skill.id }}">{{ skill.name }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="field-group">
+            <label for="format">Format</label>
+            <select id="format" name="format">
+              <option value="online">Online</option>
+              <option value="in_person">In person</option>
+            </select>
+          </div>
+        </div>
+
+        <input type="hidden" name="duration_minutes" value="60">
+
+        <div class="schedule-card">
+          <div class="schedule-heading">
+            <div>
+              <h2>Select a date</h2>
+              <p>Pick a date and then choose a convenient time slot.</p>
+            </div>
+            <div class="schedule-meta">
+              <span class="badge badge-slate">Flexible request</span>
+              <span class="badge badge-amber">Tutor confirms</span>
+            </div>
+          </div>
+
+          {% if using_default_availability %}
+          <p class="availability-note">Suggested weekday slot request hours are 09:00–17:00. The tutor confirms every request.</p>
+          {% endif %}
+
+          {% if slot_groups %}
+          <div class="date-picker" role="tablist" aria-label="Available session dates">
+            {% for group in slot_groups %}
+            <button type="button" class="date-choice {{ 'is-selected' if loop.first }}" data-date="{{ group.key }}" role="tab" aria-selected="{{ 'true' if loop.first else 'false' }}">
+              <span>{{ group.weekday }}</span>
+              <strong>{{ group.day }}</strong>
+              <small>{{ group.month }}</small>
+            </button>
+            {% endfor %}
+          </div>
+
+          <div class="time-picker">
+            {% for group in slot_groups %}
+            <div class="time-panel {{ 'is-active' if loop.first }}" data-date="{{ group.key }}" {% if not loop.first %}hidden{% endif %}>
+              <p class="time-panel-label">{{ group.full_date }}</p>
+              <div class="time-grid">
+                {% for slot in group.slots %}
+                <label class="time-choice">
+                  <input type="radio" name="scheduled_at" value="{{ slot.value }}" required>
+                  <span>{{ slot.time }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+            {% endfor %}
+          </div>
+          {% else %}
+          <div class="empty-state">No times are available in the next two weeks.</div>
+          {% endif %}
+        </div>
+
+        <div class="exchange-card">
+          <div>
+            <p class="exchange-label">Skill exchange</p>
+            <p class="exchange-copy">Offer one of your skills in return for this session.</p>
+          </div>
+          <label class="switch" aria-label="Skill exchange toggle">
+            <input type="checkbox" name="is_skill_exchange">
+            <span class="switch-track"><span class="switch-thumb"></span></span>
+          </label>
+        </div>
+        <p><label for="exchange_skill_id">Skill you will offer in return</label><select id="exchange_skill_id" name="exchange_skill_id"><option value="">Choose a skill</option>{% for skill in exchange_skills %}<option value="{{ skill.id }}">{{ skill.name }}</option>{% endfor %}</select></p>
+
+        <button class="btn btn-amber btn-block">Send booking request</button>
+      </form>
+    </section>
+
+    <aside class="card summary-card">
+      <div class="summary-tutor">
+        <div class="avatar">{{ tutor.user.name[:2]|upper }}</div>
+        <div>
+          <b>{{ tutor.user.name }}</b>
+          <div class="role">★ {{ tutor.avg_rating }}</div>
+        </div>
+      </div>
+      <p>Your request is sent to the tutor for approval. Once accepted, both participants can join the session and keep everything organised in one place.</p>
+    </aside>
+  </div>
+</div>
+
+<script>
+document.querySelectorAll('.date-choice').forEach(function(button){
+  button.addEventListener('click', function(){
+    var date = button.dataset.date;
+    document.querySelectorAll('.date-choice').forEach(function(item){
+      var selected = item === button;
+      item.classList.toggle('is-selected', selected);
+      item.setAttribute('aria-selected', selected ? 'true' : 'false');
+    });
+    document.querySelectorAll('.time-panel').forEach(function(panel){
+      var active = panel.dataset.date === date;
+      panel.hidden = !active;
+      panel.classList.toggle('is-active', active);
+    });
+  });
+});
+</script>
+{% endblock %}

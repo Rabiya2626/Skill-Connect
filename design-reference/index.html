@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SkillConnect — Trade what you know</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .nav-marketing {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 48px; position: sticky; top: 0; z-index: 20;
+    background: rgba(245,246,250,0.85); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+  }
+  .nav-marketing .brand { display:flex; align-items:center; gap: 10px; }
+  .nav-marketing .brand .mark { width: 32px; height: 32px; border-radius: 8px; background: var(--ink); color: var(--amber); display:flex; align-items:center; justify-content:center; font-family: var(--font-display); font-weight: 700; }
+  .nav-marketing .brand .name { font-family: var(--font-display); font-weight: 700; font-size: 17px; }
+  .nav-links { display:flex; gap: 34px; }
+  .nav-links a { font-size: 14px; font-weight: 500; color: var(--ink-soft); }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta { display:flex; gap: 12px; align-items:center; }
+
+  .hero {
+    display: grid; grid-template-columns: 1.05fr 0.95fr; gap: 40px;
+    padding: 76px 48px 90px 48px; max-width: 1360px; margin: 0 auto;
+    align-items: center;
+  }
+  .hero h1 { font-size: 52px; line-height: 1.05; margin: 18px 0 20px 0; max-width: 560px; }
+  .hero h1 .accent { color: var(--teal-dark); }
+  .hero p.lede { font-size: 16.5px; max-width: 460px; margin-bottom: 30px; }
+  .hero-actions { display: flex; gap: 14px; align-items: center; margin-bottom: 34px; }
+  .hero-proof { display: flex; gap: 26px; }
+  .hero-proof .p { }
+  .hero-proof .p .n { font-family: var(--font-display); font-size: 21px; font-weight: 700; }
+  .hero-proof .p .l { font-size: 12px; color: var(--slate); }
+
+  /* Hero visual: stacked exchange tickets */
+  .hero-visual { position: relative; height: 460px; }
+  .hero-visual .ticket { position: absolute; width: 340px; }
+  .hero-visual .ticket.t1 { top: 0; left: 30px; z-index: 3; transform: rotate(-2deg); }
+  .hero-visual .ticket.t2 { top: 150px; left: 90px; z-index: 2; transform: rotate(3deg); }
+  .hero-visual .ticket.t3 { top: 300px; left: 10px; z-index: 1; transform: rotate(-4deg); }
+  .hero-visual .float-badge {
+    position: absolute; right: 6px; top: 40px; z-index: 4;
+    background: var(--white); border: 1px solid var(--line); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md); padding: 14px 16px; width: 176px;
+  }
+  .hero-visual .float-badge .l { font-family: var(--font-mono); font-size: 10px; text-transform:uppercase; letter-spacing:.08em; color: var(--slate-light);}
+  .hero-visual .float-badge .v { font-family: var(--font-display); font-weight: 700; font-size: 22px; color: var(--teal-dark); }
+
+  .strip {
+    background: var(--ink); color: rgba(255,255,255,0.85);
+    padding: 20px 48px; display: flex; justify-content: center; gap: 64px; flex-wrap: wrap;
+  }
+  .strip .s { display:flex; align-items:baseline; gap: 8px; font-size: 13.5px; }
+  .strip .s b { font-family: var(--font-display); color: var(--white); font-size: 15px; }
+
+  .section { max-width: 1240px; margin: 0 auto; padding: 92px 48px; }
+  .section-intro { max-width: 620px; margin-bottom: 48px; }
+  .section-intro h2 { font-size: 34px; margin-top: 14px; }
+
+  .steps { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; }
+  .step { padding: 28px 24px; border-top: 2px solid var(--ink); }
+  .step .num { font-family: var(--font-mono); font-size: 12px; color: var(--amber-dark); margin-bottom: 18px; }
+  .step h3 { font-size: 18px; }
+
+  .roles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+  .role-card { padding: 26px; }
+  .role-card .icon { width: 42px; height: 42px; border-radius: 10px; background: var(--teal-tint); display:flex; align-items:center; justify-content:center; margin-bottom: 18px; }
+  .role-card .icon svg { width: 20px; height: 20px; color: var(--teal-dark); }
+  .role-card h3 { font-size: 17px; }
+  .role-card ul { margin-top: 14px; }
+  .role-card li { font-size: 13px; color: var(--slate); padding: 5px 0; display:flex; gap: 8px; }
+  .role-card li::before { content: "→"; color: var(--amber-dark); }
+
+  .browse-preview { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; }
+
+  .cta-band {
+    background: var(--ink); border-radius: var(--radius-lg); padding: 56px 60px;
+    display: flex; align-items: center; justify-content: space-between; gap: 30px;
+    background-image: radial-gradient(circle at 88% 20%, rgba(232,162,61,0.16), transparent 55%);
+  }
+  .cta-band h2 { color: var(--white); font-size: 28px; max-width: 420px; }
+  .cta-band p { color: rgba(255,255,255,0.6); max-width: 380px; }
+
+  footer { border-top: 1px solid var(--line); padding: 44px 48px; }
+  .foot-grid { max-width: 1240px; margin: 0 auto; display: flex; justify-content: space-between; gap: 40px; flex-wrap: wrap; }
+  .foot-cols { display: flex; gap: 64px; }
+  .foot-col .h { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--slate-light); margin-bottom: 12px; }
+  .foot-col a { display:block; font-size: 13.5px; color: var(--ink-soft); padding: 5px 0; }
+
+  @media (max-width: 980px) {
+    .hero { grid-template-columns: 1fr; }
+    .hero-visual { display: none; }
+    .steps, .roles, .browse-preview { grid-template-columns: 1fr; }
+    .nav-links { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav-marketing">
+  <div class="brand">
+    <div class="mark">S</div>
+    <div class="name">SkillConnect</div>
+  </div>
+  <div class="nav-links">
+    <a href="browse.html">Browse skills</a>
+    <a href="#how">How it works</a>
+    <a href="tutor-profile.html">Become a tutor</a>
+    <a href="#roles">For campuses</a>
+  </div>
+  <div class="nav-cta">
+    <a href="#" class="btn btn-ghost btn-sm">Log in</a>
+    <a href="dashboard.html" class="btn btn-primary btn-sm">Get started free</a>
+  </div>
+</nav>
+
+<header class="hero">
+  <div>
+    <span class="eyebrow">Peer-to-peer learning</span>
+    <h1>Trade what you know<br>for what you want <span class="accent">to learn.</span></h1>
+    <p class="lede">SkillConnect pairs students who can teach with students who want to learn — no tuition, no middleman. Offer a skill, request one back, and book a session in minutes.</p>
+    <div class="hero-actions">
+      <a href="dashboard.html" class="btn btn-amber">Create your profile</a>
+      <a href="browse.html" class="btn btn-outline">Browse skills →</a>
+    </div>
+    <div class="hero-proof">
+      <div class="p"><span class="n">4,180+</span><br><span class="l">Active students</span></div>
+      <div class="p"><span class="n">920</span><br><span class="l">Skills listed</span></div>
+      <div class="p"><span class="n">4.8 / 5</span><br><span class="l">Avg. session rating</span></div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="ticket t1">
+      <div class="ticket-main">
+        <span class="badge badge-teal">Offering</span>
+        <h3 style="font-size:16px; margin-top:10px;">Conversational Spanish</h3>
+        <p style="font-size:12.5px; margin:6px 0 0 0;">with Maya R. · Junior, Linguistics</p>
+      </div>
+      <div class="ticket-seam"><div class="ticket-notch left"></div><div class="ticket-notch right"></div></div>
+      <div class="ticket-stub"><span class="stub-label">Rating</span><span class="stub-value">4.9</span></div>
+    </div>
+    <div class="ticket t2">
+      <div class="ticket-main">
+        <span class="badge badge-amber">Exchange</span>
+        <h3 style="font-size:16px; margin-top:10px;">Python ⇄ Guitar basics</h3>
+        <p style="font-size:12.5px; margin:6px 0 0 0;">with Dev K. · Sophomore, CS</p>
+      </div>
+      <div class="ticket-seam"><div class="ticket-notch left"></div><div class="ticket-notch right"></div></div>
+      <div class="ticket-stub"><span class="stub-label">Sessions</span><span class="stub-value">32</span></div>
+    </div>
+    <div class="ticket t3">
+      <div class="ticket-main">
+        <span class="badge badge-teal">Offering</span>
+        <h3 style="font-size:16px; margin-top:10px;">Calculus II tutoring</h3>
+        <p style="font-size:12.5px; margin:6px 0 0 0;">with Priya S. · Senior, Applied Math</p>
+      </div>
+      <div class="ticket-seam"><div class="ticket-notch left"></div><div class="ticket-notch right"></div></div>
+      <div class="ticket-stub"><span class="stub-label">Rating</span><span class="stub-value">5.0</span></div>
+    </div>
+    <div class="float-badge">
+      <div class="l">This week</div>
+      <div class="v">316 sessions</div>
+      <div class="l" style="margin-top:2px;">booked across campus</div>
+    </div>
+  </div>
+</header>
+
+<div class="strip">
+  <div class="s"><b>0 ₹</b> tuition, ever</div>
+  <div class="s"><b>2 min</b> average booking time</div>
+  <div class="s"><b>140+</b> skill categories</div>
+  <div class="s"><b>97%</b> of tutors respond same day</div>
+</div>
+
+<section class="section" id="how">
+  <div class="section-intro">
+    <span class="eyebrow">How it works</span>
+    <h2>From "I know this" to a booked session in three steps.</h2>
+  </div>
+  <div class="steps">
+    <div class="step">
+      <div class="num">01 / List</div>
+      <h3>Add your skills and interests</h3>
+      <p>Build a profile with what you can teach and what you're hoping to learn — languages, code, music, exam prep, anything.</p>
+    </div>
+    <div class="step">
+      <div class="num">02 / Match</div>
+      <h3>Find a peer or propose a trade</h3>
+      <p>Search tutors by skill and availability, or offer a straight exchange: your Python for their guitar lessons.</p>
+    </div>
+    <div class="step">
+      <div class="num">03 / Meet</div>
+      <h3>Book, learn, and rate the session</h3>
+      <p>Pick a time slot, get a confirmation, and leave a rating afterward so the community keeps getting better matches.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="roles" style="background:var(--white); border-top:1px solid var(--line); border-bottom:1px solid var(--line);">
+  <div class="section-intro">
+    <span class="eyebrow">Built for campus life</span>
+    <h2>One platform, three roles you can move between freely.</h2>
+  </div>
+  <div class="roles">
+    <div class="role-card card">
+      <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 14a5 5 0 100-10 5 5 0 000 10zM4 21a8 8 0 0116 0"/></svg></div>
+      <h3>Tutors</h3>
+      <p style="font-size:13.5px;">Turn what you already know into real teaching experience.</p>
+      <ul>
+        <li>Set your own availability</li>
+        <li>Accept or decline requests</li>
+        <li>Build a public rating</li>
+      </ul>
+    </div>
+    <div class="role-card card">
+      <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M4 19.5A2.5 2.5 0 006.5 22H20V2H6.5A2.5 2.5 0 004 4.5v15z"/></svg></div>
+      <h3>Learners</h3>
+      <p style="font-size:13.5px;">Get affordable, peer-level help exactly where you're stuck.</p>
+      <ul>
+        <li>Search tutors by skill</li>
+        <li>Track your learning progress</li>
+        <li>Leave feedback that matters</li>
+      </ul>
+    </div>
+    <div class="role-card card">
+      <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m5 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></div>
+      <h3>Administrators</h3>
+      <p style="font-size:13.5px;">Keep the community verified, active, and accountable.</p>
+      <ul>
+        <li>Approve new tutors</li>
+        <li>Monitor platform activity</li>
+        <li>Remove fake accounts</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head" style="margin-top:0;">
+    <div class="section-intro" style="margin-bottom:0;">
+      <span class="eyebrow">Live on campus right now</span>
+      <h2 style="font-size:26px;">A few open exchanges</h2>
+    </div>
+    <a href="browse.html" class="link">Browse all skills →</a>
+  </div>
+  <div class="browse-preview">
+    <div class="ticket">
+      <div class="ticket-main">
+        <span class="badge badge-teal">Offering</span>
+        <h3 style="font-size:16px; margin-top:10px;">UI Design in Figma</h3>
+        <p style="font-size:13px; margin:6px 0 0 0;">with Leah T. · Junior, HCI · 5 sessions/week</p>
+      </div>
+      <div class="ticket-seam"><div class="ticket-notch left"></div><div class="ticket-notch right"></div></div>
+      <div class="ticket-stub"><span class="stub-label">Rating</span><span class="stub-value">4.7</span></div>
+    </div>
+    <div class="ticket">
+      <div class="ticket-main">
+        <span class="badge badge-amber">Exchange</span>
+        <h3 style="font-size:16px; margin-top:10px;">Statistics ⇄ Photography</h3>
+        <p style="font-size:13px; margin:6px 0 0 0;">with Owen M. · Senior, Economics</p>
+      </div>
+      <div class="ticket-seam"><div class="ticket-notch left"></div><div class="ticket-notch right"></div></div>
+      <div class="ticket-stub"><span class="stub-label">Sessions</span><span class="stub-value">18</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-top:0;">
+  <div class="cta-band">
+    <div>
+      <h2>Your next skill is one campus away.</h2>
+      <p>Join for free and list your first skill in under two minutes.</p>
+    </div>
+    <a href="dashboard.html" class="btn btn-amber">Create your profile →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="foot-grid">
+    <div class="brand">
+      <div class="mark">S</div>
+      <div class="name">SkillConnect</div>
+    </div>
+    <div class="foot-cols">
+      <div class="foot-col">
+        <div class="h">Platform</div>
+        <a href="browse.html">Browse skills</a>
+        <a href="dashboard.html">Dashboard</a>
+        <a href="tutor-profile.html">Tutor profiles</a>
+      </div>
+      <div class="foot-col">
+        <div class="h">Community</div>
+        <a href="#">Guidelines</a>
+        <a href="#">Trust & safety</a>
+        <a href="admin.html">Admin console</a>
+      </div>
+      <div class="foot-col">
+        <div class="h">Support</div>
+        <a href="#">Help center</a>
+        <a href="#">Contact us</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

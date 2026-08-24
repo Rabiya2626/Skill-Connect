@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Browse skills — SkillConnect</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  .browse-layout { display: grid; grid-template-columns: 240px 1fr; gap: 28px; align-items: start; }
+  .filter-block { padding-bottom: 26px; border-bottom: 1px solid var(--line); margin-bottom: 20px; }
+  .filter-block .h { font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: .08em; color: var(--slate-light); margin-bottom: 12px; }
+  .filter-option { display: flex; align-items: center; justify-content: space-between; padding: 6px 0; font-size: 13.5px; color: var(--ink-soft); }
+  .filter-option .n { font-family: var(--font-mono); font-size: 11px; color: var(--slate-light); }
+  .filter-option input { accent-color: var(--ink); }
+  .filter-option label { display:flex; align-items:center; gap: 9px; }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
+
+  .results-head { display:flex; align-items:center; justify-content:space-between; margin-bottom: 16px; }
+  .results-head .count { font-size: 13px; color: var(--slate); }
+  .sort-select { font-size: 13px; border: 1px solid var(--line-strong); border-radius: var(--radius-sm); padding: 7px 10px; color: var(--ink-soft); background: var(--white); }
+
+  .tutor-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+
+  .tutor-card { padding: 20px; }
+  .tutor-card .head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px; }
+  .tutor-card .head .info { flex: 1; }
+  .tutor-card .head .name { font-family: var(--font-display); font-weight: 600; font-size: 15.5px; }
+  .tutor-card .head .role { font-size: 12.5px; color: var(--slate); margin-top: 2px; }
+  .tutor-card .rate { text-align: right; font-family: var(--font-mono); font-size: 11px; color: var(--slate-light); }
+  .tutor-card .rate .stars { color: var(--amber-dark); font-size: 13px; font-family: var(--font-body); font-weight: 600; }
+  .tutor-card .skills { display: flex; gap: 6px; flex-wrap: wrap; margin: 12px 0 14px 0; }
+  .tutor-card .foot { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; border-top: 1px dashed var(--line-strong); }
+  .tutor-card .foot .avail { font-size: 12px; color: var(--teal-dark); display:flex; align-items:center; gap:6px; }
+  .tutor-card .foot .avail .d { width: 6px; height: 6px; border-radius: 50%; background: var(--teal); }
+</style>
+</head>
+<body>
+<div class="app-shell">
+
+  <aside class="sidebar">
+    <div class="sidebar-brand"><div class="mark">S</div><div class="name">SkillConnect</div></div>
+    <div class="nav-section">
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12l9-9 9 9M5 10v10h14V10"/></svg>Dashboard</div>
+      <div class="nav-item is-active"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Browse skills</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 11a4 4 0 100-8 4 4 0 000 8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>My exchanges</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>Sessions<span class="count">3</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Manage</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20l9-5-9-5-9 5 9 5z"/><path d="M12 12L3 7l9-5 9 5-9 5z"/></svg>My skills</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4v16h16v-7"/><path d="M17.5 3.5a2.1 2.1 0 013 3L12 15l-4 1 1-4 8.5-8.5z"/></svg>Tutor tools</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 17.75l-6.16 3.24 1.18-6.88L2 9.24l6.92-1L12 2l3.08 6.24 6.92 1-5.02 4.87 1.18 6.88z"/></svg>Ratings & feedback</div>
+      <div class="nav-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>Notifications<span class="count">5</span></div>
+    </div>
+    <div class="sidebar-foot">
+      <div class="avatar">DK</div>
+      <div class="who"><span class="n">Dev Kulkarni</span><span class="r">Learner · Tutor</span></div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="search-field">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        Search skills, tutors, or sessions…
+      </div>
+      <div class="topbar-actions">
+        <button class="icon-btn"><span class="dot"></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg></button>
+        <a href="#" class="btn btn-amber btn-sm">+ Offer a skill</a>
+      </div>
+    </div>
+
+    <div class="content">
+      <span class="eyebrow">920 skills listed</span>
+      <h1 style="font-size: 26px; margin-top: 10px;">Browse skills</h1>
+
+      <div class="chip-row">
+        <div class="chip is-active">All categories</div>
+        <div class="chip">Programming</div>
+        <div class="chip">Languages</div>
+        <div class="chip">Music</div>
+        <div class="chip">Math & Sciences</div>
+        <div class="chip">Design</div>
+        <div class="chip">Test prep</div>
+        <div class="chip">Writing</div>
+      </div>
+
+      <div class="browse-layout">
+        <aside>
+          <div class="filter-block">
+            <div class="h">Session type</div>
+            <div class="filter-option"><label><input type="checkbox" checked> Tutoring</label><span class="n">612</span></div>
+            <div class="filter-option"><label><input type="checkbox" checked> Skill exchange</label><span class="n">308</span></div>
+          </div>
+          <div class="filter-block">
+            <div class="h">Format</div>
+            <div class="filter-option"><label><input type="checkbox"> In person</label><span class="n">240</span></div>
+            <div class="filter-option"><label><input type="checkbox" checked> Online</label><span class="n">680</span></div>
+          </div>
+          <div class="filter-block">
+            <div class="h">Availability</div>
+            <div class="filter-option"><label><input type="checkbox"> This week</label><span class="n">410</span></div>
+            <div class="filter-option"><label><input type="checkbox"> Weekends</label><span class="n">265</span></div>
+            <div class="filter-option"><label><input type="checkbox"> Evenings</label><span class="n">390</span></div>
+          </div>
+          <div class="filter-block" style="border-bottom:none;">
+            <div class="h">Minimum rating</div>
+            <div class="filter-option"><label><input type="radio" name="rating"> 4.5 & up</label></div>
+            <div class="filter-option"><label><input type="radio" name="rating"> 4.0 & up</label></div>
+            <div class="filter-option"><label><input type="radio" name="rating" checked> Any rating</label></div>
+          </div>
+        </aside>
+
+        <div>
+          <div class="results-head">
+            <span class="count">312 tutors match "Programming, Online"</span>
+            <select class="sort-select"><option>Sort: Best match</option><option>Highest rated</option><option>Most sessions</option></select>
+          </div>
+
+          <div class="tutor-grid">
+            <a href="tutor-profile.html" class="card tutor-card">
+              <div class="head">
+                <div class="avatar-circle" style="width:44px;height:44px;background:var(--teal-tint);color:var(--teal-dark);font-size:14px;">PS</div>
+                <div class="info"><div class="name">Priya Sharma</div><div class="role">Senior · Applied Mathematics</div></div>
+                <div class="rate"><div class="stars">★ 5.0</div>92 sessions</div>
+              </div>
+              <div class="skills"><span class="badge badge-slate">Calculus II</span><span class="badge badge-slate">Linear Algebra</span><span class="badge badge-slate">Statistics</span></div>
+              <div class="foot"><span class="avail"><span class="d"></span>Open today</span><span class="badge badge-amber">Tutoring</span></div>
+            </a>
+
+            <a href="tutor-profile.html" class="card tutor-card">
+              <div class="head">
+                <div class="avatar-circle" style="width:44px;height:44px;background:var(--amber-tint);color:var(--amber-dark);font-size:14px;">DK</div>
+                <div class="info"><div class="name">Dev Kulkarni</div><div class="role">Sophomore · Computer Science</div></div>
+                <div class="rate"><div class="stars">★ 4.8</div>32 sessions</div>
+              </div>
+              <div class="skills"><span class="badge badge-slate">Python</span><span class="badge badge-slate">Data Structures</span></div>
+              <div class="foot"><span class="avail"><span class="d"></span>Open this week</span><span class="badge badge-teal">Exchange</span></div>
+            </a>
+
+            <a href="tutor-profile.html" class="card tutor-card">
+              <div class="head">
+                <div class="avatar-circle" style="width:44px;height:44px;background:var(--teal-tint);color:var(--teal-dark);font-size:14px;">LT</div>
+                <div class="info"><div class="name">Leah Tran</div><div class="role">Junior · Human-Computer Interaction</div></div>
+                <div class="rate"><div class="stars">★ 4.7</div>58 sessions</div>
+              </div>
+              <div class="skills"><span class="badge badge-slate">Figma</span><span class="badge badge-slate">UI Design</span><span class="badge badge-slate">Branding</span></div>
+              <div class="foot"><span class="avail"><span class="d"></span>Open today</span><span class="badge badge-amber">Tutoring</span></div>
+            </a>
+
+            <a href="tutor-profile.html" class="card tutor-card">
+              <div class="head">
+                <div class="avatar-circle" style="width:44px;height:44px;background:var(--amber-tint);color:var(--amber-dark);font-size:14px;">OM</div>
+                <div class="info"><div class="name">Owen Marsh</div><div class="role">Senior · Economics</div></div>
+                <div class="rate"><div class="stars">★ 4.6</div>18 sessions</div>
+              </div>
+              <div class="skills"><span class="badge badge-slate">Statistics</span><span class="badge badge-slate">Photography</span></div>
+              <div class="foot"><span class="avail"><span class="d"></span>Open weekends</span><span class="badge badge-teal">Exchange</span></div>
+            </a>
+
+            <a href="tutor-profile.html" class="card tutor-card">
+              <div class="head">
+                <div class="avatar-circle" style="width:44px;height:44px;background:var(--teal-tint);color:var(--teal-dark);font-size:14px;">MR</div>
+                <div class="info"><div class="name">Maya Reyes</div><div class="role">Junior · Linguistics</div></div>
+                <div class="rate"><div class="stars">★ 4.9</div>74 sessions</div>
+              </div>
+              <div class="skills"><span class="badge badge-slate">Spanish</span><span class="badge badge-slate">Academic Writing</span></div>
+              <div class="foot"><span class="avail"><span class="d"></span>Open today</span><span class="badge badge-amber">Tutoring</span></div>
+            </a>
+
+            <a href="tutor-profile.html" class="card tutor-card">
+              <div class="head">
+                <div class="avatar-circle" style="width:44px;height:44px;background:var(--amber-tint);color:var(--amber-dark);font-size:14px;">RN</div>
+                <div class="info"><div class="name">Rahul Nair</div><div class="role">Senior · Electrical Engineering</div></div>
+                <div class="rate"><div class="stars">★ 4.5</div>26 sessions</div>
+              </div>
+              <div class="skills"><span class="badge badge-slate">Circuits</span><span class="badge badge-slate">MATLAB</span></div>
+              <div class="foot"><span class="avail"><span class="d"></span>Open tomorrow</span><span class="badge badge-amber">Tutoring</span></div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>
