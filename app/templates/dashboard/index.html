@@ -1,1 +1,152 @@
-{% extends 'base.html' %}{% block title %}Dashboard — SkillConnect{% endblock %}{% block content %}<div class="welcome-card"><div><span class="eyebrow" style="color:var(--amber)">Your learning hub</span><h1>Welcome back, {{ current_user.name.split()[0] }}.</h1><p>Pick up a skill, share one, or keep an exchange moving.</p></div><a class="btn btn-amber" href="{{ url_for('skills.browse') }}">Browse skills</a></div><div class="grid-2" style="margin-top:20px"><section class="card"><div class="section-head"><h2>Upcoming sessions</h2><a class="link" href="{{ url_for('sessions.index') }}">View all</a></div>{% for session in upcoming %}<div class="session-row"><div class="when"><div class="d">{{ session.scheduled_at.strftime('%a') }}</div><div class="t">{{ session.scheduled_at.strftime('%H:%M') }}</div></div><div class="who"><div class="n">{{ session.skill.name }}</div><div class="s">with {{ 'learner' if session.tutor_id == current_user.id else 'tutor' }}</div></div><span class="badge badge-teal">{{ session.format }}</span></div>{% else %}<p style="padding:20px">No upcoming sessions yet.</p>{% endfor %}</section><section class="card"><div class="section-head"><h2>Suggested matches</h2></div>{% for user in matches %}<div class="match-card"><div class="avatar">{{ user.name[:2]|upper }}</div><div class="info"><div class="n">{{ user.name }}</div><div class="s">Offers a skill you want</div></div><a class="btn btn-outline btn-sm" href="{{ url_for('tutors.profile', user_id=user.id) }}">View</a></div>{% else %}<p style="padding:20px">Add wanted skills to discover matches.</p>{% endfor %}</section></div><section class="card" style="margin-top:20px"><div class="section-head"><h2>Two-way exchange matches</h2></div>{% for user in barter_matches %}<div class="match-card"><div class="avatar">{{ user.name[:2]|upper }}</div><div class="info"><div class="n">{{ user.name }}</div><div class="s">You each offer something the other wants</div></div><a class="btn btn-amber btn-sm" href="{{ url_for('tutors.profile', user_id=user.id) }}">Propose exchange</a></div>{% else %}<p style="padding:20px">Add both offered and wanted skills to find reciprocal exchanges.</p>{% endfor %}</section>{% endblock %}
+{% extends 'base.html' %}{% block title %}Dashboard — SkillConnect{% endblock %}{% block content %}
+<div class="dashboard-shell">
+  <header class="dashboard-hero">
+    <div>
+      <span class="eyebrow eyebrow-amber">Welcome back</span>
+      <h1>Hi, {{ current_user.name.split()[0] }}!</h1>
+      <p>{{ 'Pick up a skill and keep your learning journey moving.' if current_user.role == 'learner' else 'Share your expertise and help learners grow.' if current_user.role == 'tutor' else 'Pick up a skill, share one, or keep an exchange moving.' }}</p>
+    </div>
+    <a class="btn btn-amber" href="{{ url_for('skills.browse') }}">Browse skills</a>
+  </header>
+
+  <section class="stat-grid">
+    {% for label, value in [('Upcoming sessions', stats.upcoming), ('Skills learning', stats.learning), ('Skills teaching', stats.teaching), ('Completed sessions', stats.completed)] %}
+      <div class="card stat-card">
+        <div class="stat-top">
+          <span class="stat-label">{{ label }}</span>
+          <span class="stat-pill">{{ value }}</span>
+        </div>
+        <div class="stat-value">{{ value }}</div>
+      </div>
+    {% endfor %}
+  </section>
+
+  <div class="dashboard-grid dashboard-grid-two">
+    <section class="card dashboard-card">
+      <div class="card-header">
+        <h2>Upcoming Sessions</h2>
+        <a href="{{ url_for('sessions.index') }}" class="text-link">View all</a>
+      </div>
+
+      {% for session in upcoming %}
+        <div class="session-row">
+          <div class="date-pill">
+            <span class="weekday">{{ session.scheduled_at.strftime('%a') }}</span>
+            <span class="time">{{ session.scheduled_at.strftime('%H:%M') }}</span>
+          </div>
+          <div class="session-meta">
+            <div class="session-name">{{ session.skill.name }}</div>
+            <div class="session-subtitle">with {{ session.learner.name if session.tutor_id == current_user.id else session.tutor.name }}</div>
+          </div>
+          <span class="badge badge-teal">{{ session.format }}</span>
+        </div>
+      {% else %}
+        <div class="empty-state">
+          <div class="empty-icon">✓</div>
+          <h3>No upcoming sessions yet</h3>
+          <p>Book a session to get started on your learning journey.</p>
+          <a class="btn btn-amber" href="{{ url_for('skills.browse') }}">Browse Skills</a>
+        </div>
+      {% endfor %}
+    </section>
+
+    <section class="card dashboard-card">
+      <div class="card-header">
+        <h2>Suggested Matches</h2>
+      </div>
+
+      {% for user in matches %}
+        <div class="person-row">
+          <div class="avatar-circle avatar-small">{{ user.name[:2]|upper }}</div>
+          <div class="person-meta">
+            <div class="person-name">{{ user.name }}</div>
+            <div class="person-role">Offers a skill you want</div>
+          </div>
+          <a class="btn btn-outline btn-sm" href="{{ url_for('tutors.profile', user_id=user.id) }}">View</a>
+        </div>
+      {% else %}
+        <div class="empty-state compact">
+          <div class="empty-icon">✦</div>
+          <h3>No matches yet</h3>
+          <p>Add the skills you want to learn to find the best matches for you.</p>
+          <a class="btn btn-outline" href="{{ url_for('skills.my_skills') }}">Add Skills</a>
+        </div>
+      {% endfor %}
+    </section>
+  </div>
+
+  <div class="dashboard-grid dashboard-grid-two">
+    <section class="card dashboard-card">
+      <div class="card-header">
+        <h2>Your learning progress</h2>
+      </div>
+
+      {% for item in learning_progress %}
+        <div class="progress-item">
+          <div class="progress-top">
+            <span>{{ item.skill.name }}</span>
+            <span class="progress-percent">{{ item.percent }}%</span>
+          </div>
+          <div class="progress-bar">
+            <span style="width: {{ item.percent }}%"></span>
+          </div>
+        </div>
+      {% else %}
+        <div class="empty-state compact">
+          <div class="empty-icon">◎</div>
+          <h3>Start your learning journey</h3>
+          <p>Add a skill you want to learn and book a session to track your progress.</p>
+          <a class="btn btn-outline" href="{{ url_for('skills.my_skills') }}">Add a Learning Goal</a>
+        </div>
+      {% endfor %}
+    </section>
+
+    <section class="card dashboard-card">
+      <div class="card-header">
+        <h2>Recent activity</h2>
+      </div>
+
+      {% for row in activity %}
+        <div class="activity-item">
+          <div class="activity-dot"></div>
+          <div class="activity-copy">
+            <div class="activity-title">{{ row.type|replace('_', ' ')|title }}</div>
+            <p>{{ row.message }}</p>
+            <span>{{ row.created_at.strftime('%d %b, %H:%M') }}</span>
+          </div>
+        </div>
+      {% else %}
+        <div class="empty-state compact">
+          <div class="empty-icon">◌</div>
+          <h3>No recent activity</h3>
+          <p>Your latest bookings and updates will appear here.</p>
+        </div>
+      {% endfor %}
+    </section>
+  </div>
+
+  {% if current_user.role == 'both' %}<section class="card dashboard-card exchange-card">
+    <div class="card-header">
+      <h2>Two-way Exchange Matches</h2>
+    </div>
+
+    {% for user in barter_matches %}
+      <div class="person-row">
+        <div class="avatar-circle avatar-small">{{ user.name[:2]|upper }}</div>
+        <div class="person-meta">
+          <div class="person-name">{{ user.name }}</div>
+          <div class="person-role">You each offer something the other wants</div>
+        </div>
+        <a class="btn btn-amber btn-sm" href="{{ url_for('tutors.profile', user_id=user.id) }}">Propose exchange</a>
+      </div>
+    {% else %}
+      <div class="empty-state compact">
+        <div class="empty-icon">⇄</div>
+        <h3>No exchange matches yet</h3>
+        <p>Add skills you can teach and want to learn to find mutual exchanges.</p>
+        <a class="btn btn-amber" href="{{ url_for('skills.my_skills') }}">Add Both Skills</a>
+      </div>
+    {% endfor %}
+  </section>{% endif %}
+</div>
+{% endblock %}

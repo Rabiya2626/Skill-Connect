@@ -39,7 +39,7 @@ with app.app_context():
             db.session.add(person); db.session.flush()
         people[name] = person
         if role in {"learner", "both"} and not person.learner: person.learner = Learner(learning_goals="Learn practical skills from peers.")
-        if role in {"tutor", "both"} and not person.tutor: person.tutor = Tutor(approved_by_admin=True, avg_rating=rating, session_count=sessions, response_rate=98)
+        if role in {"tutor", "both"} and not person.tutor: person.tutor = Tutor(avg_rating=rating, session_count=sessions, response_rate=98)
     if not db.session.get(Admin, people["Anita Desai"].id): db.session.add(Admin(user_id=people["Anita Desai"].id, permissions="users,skills,tutors,reports"))
     db.session.flush()
 

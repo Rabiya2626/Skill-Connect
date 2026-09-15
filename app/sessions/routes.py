@@ -1,8 +1,8 @@
-from datetime import datetime
-from flask import Blueprint, abort, flash, redirect, render_template, url_for
+from datetime import datetime, timedelta
+from flask import Blueprint, abort, flash, jsonify, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from app.extensions import db
-from app.booking.routes import _normalize_slot_value, open_slots
+from app.booking.routes import _normalize_slot_value, open_slots, overlaps_existing_session
 from app.models import Feedback, Notification, Rating, RescheduleRequest, Session, Tutor
 from app.sessions.forms import FeedbackForm
 
@@ -11,6 +11,7 @@ sessions_bp = Blueprint("sessions", __name__)
 @sessions_bp.route("/sessions")
 @login_required
 def index():
+    now = datetime.utcnow()
     rows = Session.query.filter((Session.tutor_id == current_user.id) | (Session.learner_id == current_user.id)).order_by(Session.scheduled_at.desc()).all()
     slots = {
         row.id: [value for value, _ in open_slots(row.tutor.tutor, duration=row.duration_minutes)][:12]
@@ -21,19 +22,115 @@ def index():
         ((Session.tutor_id == current_user.id) | (Session.learner_id == current_user.id)),
         RescheduleRequest.requested_by_id != current_user.id,
     ).all()
-    return render_template("sessions/index.html", active_nav="sessions", sessions=rows, reschedule_slots=slots, pending_reschedules=pending_reschedules)
+    return render_template("sessions/index.html", active_nav="sessions", sessions=rows, reschedule_slots=slots, pending_reschedules=pending_reschedules, now=now)
+
+
+@sessions_bp.route("/exchanges")
+@login_required
+def exchanges():
+    if current_user.role != "both":
+        abort(403)
+    """Expose the existing barter-session workflow without duplicating its data."""
+    rows = Session.query.filter(
+        Session.is_skill_exchange.is_(True),
+        (Session.tutor_id == current_user.id) | (Session.learner_id == current_user.id),
+    ).order_by(Session.scheduled_at.desc()).all()
+    return render_template("sessions/exchanges.html", active_nav="exchanges", exchanges=rows)
 
 @sessions_bp.route("/session/<int:session_id>/meet")
 @login_required
 def meet(session_id):
     session = Session.query.filter_by(id=session_id).filter((Session.tutor_id == current_user.id) | (Session.learner_id == current_user.id)).first_or_404()
+    if session.meeting_closed_at or session.status == "completed":
+        flash("This session has ended and can no longer be rejoined.", "warning")
+        return redirect(url_for("sessions.index"))
     if session.status != "confirmed":
         flash("This session must be accepted before the meeting room is available.", "warning")
         return redirect(url_for("sessions.index"))
     if session.format != "online":
         flash("This is an in-person session, so it has no video room.", "warning")
         return redirect(url_for("sessions.index"))
+    now = datetime.utcnow()
+    if session.scheduled_at.date() != now.date() or now < session.scheduled_at:
+        flash(
+            f"Your session starts at {session.scheduled_at.strftime('%I:%M %p')} on "
+            f"{session.scheduled_at.strftime('%d %B %Y')}. You can join when the session begins.",
+            "warning",
+        )
+        return redirect(url_for("sessions.index"))
     return render_template("sessions/meet.html", active_nav="sessions", session=session)
+
+
+def _meeting_session(session_id):
+    return Session.query.filter_by(id=session_id).filter(
+        (Session.tutor_id == current_user.id) | (Session.learner_id == current_user.id)
+    ).first_or_404()
+
+
+def _meeting_error(message, status_code):
+    return jsonify({"ok": False, "message": message}), status_code
+
+
+@sessions_bp.post("/sessions/<int:session_id>/meeting/join")
+@login_required
+def meeting_join(session_id):
+    session = _meeting_session(session_id)
+    now = datetime.utcnow()
+    if session.meeting_closed_at or session.status == "completed":
+        return _meeting_error("This session has ended and can no longer be rejoined.", 409)
+    if session.status != "confirmed":
+        return _meeting_error("This session is not available to join.", 409)
+    if session.format != "online":
+        return _meeting_error("This is an in-person session and has no video room.", 409)
+    if session.scheduled_at.date() != now.date() or now < session.scheduled_at:
+        return _meeting_error(
+            f"Your session starts at {session.scheduled_at.strftime('%I:%M %p')} on "
+            f"{session.scheduled_at.strftime('%d %B %Y')}. You can join when the session begins.",
+            403,
+        )
+
+    is_tutor = current_user.id == session.tutor_id
+    joined_attr = "tutor_joined_at" if is_tutor else "learner_joined_at"
+    left_attr = "tutor_left_at" if is_tutor else "learner_left_at"
+    other_joined_attr = "learner_joined_at" if is_tutor else "tutor_joined_at"
+    other_left_attr = "learner_left_at" if is_tutor else "tutor_left_at"
+    had_left = getattr(session, left_attr) is not None
+    setattr(session, joined_attr, now)
+    setattr(session, left_attr, None)
+
+    other_is_present = getattr(session, other_joined_attr) is not None and getattr(session, other_left_attr) is None
+    if other_is_present and (session.both_joined_at is None or had_left or getattr(session, other_left_attr) is not None):
+        session.both_joined_at = now
+    db.session.commit()
+    return jsonify({"ok": True, "both_joined": session.both_joined_at is not None})
+
+
+@sessions_bp.post("/sessions/<int:session_id>/meeting/leave")
+@login_required
+def meeting_leave(session_id):
+    session = _meeting_session(session_id)
+    if session.status not in {"confirmed", "completed"}:
+        return _meeting_error("This session is not active.", 409)
+    if session.meeting_closed_at:
+        return jsonify({"ok": True, "closed": True})
+
+    now = datetime.utcnow()
+    is_tutor = current_user.id == session.tutor_id
+    joined_attr = "tutor_joined_at" if is_tutor else "learner_joined_at"
+    left_attr = "tutor_left_at" if is_tutor else "learner_left_at"
+    other_left_attr = "learner_left_at" if is_tutor else "tutor_left_at"
+    if getattr(session, joined_attr) is None:
+        return jsonify({"ok": True, "closed": False})
+    setattr(session, left_attr, now)
+
+    other_has_left = getattr(session, other_left_attr) is not None
+    if session.both_joined_at is not None and other_has_left:
+        joint_end = min(now, getattr(session, other_left_attr))
+        if joint_end - session.both_joined_at >= timedelta(minutes=5):
+            session.meeting_closed_at = now
+            session.status = "completed"
+    db.session.commit()
+    return jsonify({"ok": True, "closed": session.meeting_closed_at is not None})
 
 
 @sessions_bp.post("/sessions/<int:session_id>/respond/<decision>")
@@ -47,13 +144,7 @@ def respond_to_booking(session_id, decision):
         return redirect(url_for("sessions.index"))
 
     if decision == "accept":
-        conflict = Session.query.filter(
-            Session.tutor_id == current_user.id,
-            Session.scheduled_at == session.scheduled_at,
-            Session.status == "confirmed",
-            Session.id != session.id,
-        ).first()
-        if conflict:
+        if overlaps_existing_session(session.tutor_id, session.scheduled_at, session.duration_minutes, session.id):
             flash("That time slot is no longer available.", "error")
             return redirect(url_for("sessions.index"))
         session.status = "confirmed"
@@ -103,8 +194,7 @@ def respond_to_reschedule(request_id, decision):
     if current_user.id not in {session.tutor_id, session.learner_id} or current_user.id == change.requested_by_id:
         abort(403)
     if decision == "accept":
-        conflict = Session.query.filter(Session.tutor_id == session.tutor_id, Session.status == "confirmed", Session.scheduled_at == change.proposed_at, Session.id != session.id).first()
-        if conflict:
+        if overlaps_existing_session(session.tutor_id, change.proposed_at, session.duration_minutes, session.id):
             flash("That proposed time is no longer available.", "error")
             return redirect(url_for("sessions.index"))
         session.scheduled_at = change.proposed_at

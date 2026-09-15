@@ -40,7 +40,7 @@ def test_browse_excludes_current_user(client, app):
     db.session.flush()
 
     db.session.add(UserSkill(user_id=other_user.id, skill_id=skill.id, type="offering", proficiency_level="advanced"))
-    db.session.add(Tutor(user_id=other_user.id, approved_by_admin=True, avg_rating=0, session_count=0, response_rate=0))
+    db.session.add(Tutor(user_id=other_user.id, avg_rating=0, session_count=0, response_rate=0))
     db.session.commit()
 
     login_client(client, current_user)
@@ -64,7 +64,7 @@ def test_booking_page_offers_default_slots_when_tutor_has_no_availability(client
     db.session.flush()
 
     db.session.add(UserSkill(user_id=tutor_user.id, skill_id=skill.id, type="offering", proficiency_level="intermediate"))
-    db.session.add(Tutor(user_id=tutor_user.id, approved_by_admin=True, avg_rating=0, session_count=0, response_rate=0))
+    db.session.add(Tutor(user_id=tutor_user.id, avg_rating=0, session_count=0, response_rate=0))
     db.session.commit()
 
     login_client(client, learner)
@@ -76,7 +76,7 @@ def test_booking_page_offers_default_slots_when_tutor_has_no_availability(client
     assert b"weekday slot" in response.data
 
 
-def test_browse_only_shows_approved_tutors_and_honors_rating_filter(client, app):
+def test_browse_shows_active_tutors_and_honors_rating_filter(client, app):
     learner = User(name="Learner", email="learner-filter@example.com", role="learner")
     approved = User(name="Approved", email="approved@example.com", role="tutor")
     pending = User(name="Pending", email="pending@example.com", role="tutor")
@@ -86,8 +86,8 @@ def test_browse_only_shows_approved_tutors_and_honors_rating_filter(client, app)
     db.session.add_all([learner, approved, pending, skill])
     db.session.flush()
     db.session.add_all([
-        Tutor(user_id=approved.id, approved_by_admin=True, avg_rating=4.9, session_count=1, response_rate=90),
-        Tutor(user_id=pending.id, approved_by_admin=False, avg_rating=5, session_count=1, response_rate=90),
+        Tutor(user_id=approved.id, avg_rating=4.9, session_count=1, response_rate=90),
+        Tutor(user_id=pending.id, avg_rating=5, session_count=1, response_rate=90),
         UserSkill(user_id=approved.id, skill_id=skill.id, type="offering", proficiency_level="Advanced"),
         UserSkill(user_id=pending.id, skill_id=skill.id, type="offering", proficiency_level="Advanced"),
     ])
@@ -97,4 +97,4 @@ def test_browse_only_shows_approved_tutors_and_honors_rating_filter(client, app)
     response = client.get("/browse?minimum_rating=4.5&sort=rating")
 
     assert b"Approved" in response.data
-    assert b"Pending" not in response.data
+    assert b"Pending" in response.data

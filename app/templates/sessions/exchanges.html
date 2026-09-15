@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}My exchanges — SkillConnect{% endblock %}
+{% block content %}
+<span class="eyebrow">Skill exchange</span>
+<h1 style="font-size:26px;margin-top:10px">My exchanges</h1>
+<section class="card table-card" style="margin-top:20px">
+  <div class="table-head"><h2>Incoming and outgoing requests</h2><span class="badge badge-teal">{{ exchanges|length }} total</span></div>
+  {% for session in exchanges %}
+    <div class="session-row">
+      <div class="avatar">{{ (session.tutor.name if session.learner_id == current_user.id else session.learner.name)[:2]|upper }}</div>
+      <div class="who"><div class="n">{{ session.skill.name }} ⇄ {{ session.exchange_skill.name if session.exchange_skill else 'Skill exchange' }}</div><div class="s">{{ 'Outgoing' if session.learner_id == current_user.id else 'Incoming' }} · {{ session.scheduled_at.strftime('%d %b %Y, %H:%M') }}</div></div>
+      <span class="badge badge-{{ 'amber' if session.status == 'pending' else 'teal' if session.status in ('confirmed', 'completed') else 'slate' }}">{{ session.status|replace('_', ' ')|title }}</span>
+      <a class="btn btn-ghost btn-sm" href="{{ url_for('sessions.index') }}">View session</a>
+    </div>
+  {% else %}
+    <p style="padding:20px">No exchange requests yet. Offer a skill, then choose Skill Exchange while booking a tutor.</p>
+  {% endfor %}
+</section>
+{% endblock %}

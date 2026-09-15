@@ -19,7 +19,7 @@ def app():
         tutor.set_password('secret')
         db.session.add_all([learner, tutor])
         db.session.flush()
-        db.session.add(Tutor(user_id=tutor.id, approved_by_admin=True, avg_rating=4.8, session_count=3, response_rate=95))
+        db.session.add(Tutor(user_id=tutor.id, avg_rating=4.8, session_count=3, response_rate=95))
         skill = Skill(name='Python', category='Technology')
         db.session.add(skill)
         db.session.flush()
@@ -69,4 +69,8 @@ def test_tutor_can_accept_a_booking_request_and_unlock_the_video_room(app):
         with app.app_context():
             assert db.session.get(Session, session_id).status == 'confirmed'
             assert Notification.query.filter_by(user_id=learner_id, type='booking_accepted').count() == 1
-        assert tutor_client.get(f'/session/{session_id}/meet').status_code == 200
+        early_meet = tutor_client.get(f'/session/{session_id}/meet')
+        assert early_meet.status_code == 302
+        assert b"You can join when the session begins" in tutor_client.get(
+            f'/session/{session_id}/meet', follow_redirects=True
+        ).data

@@ -8,3 +8,6 @@ __pycache__/
 htmlcov/
 instance/*
 !.gitkeep
+app/static/uploads/
+.DS_Store
+*.log

@@ -38,6 +38,34 @@ def test_registration_requires_terms_and_verification_token_works():
         db.drop_all()
 
 
+def test_forgot_password_uses_generic_message_for_unknown_email():
+    app = make_app()
+    client = app.test_client()
+
+    response = client.post("/forgot-password", data={"email": "missing@example.com"}, follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b"If an account exists for this email, a password reset link has been sent." in response.data
+
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
+
+
+def test_invalid_reset_token_shows_expired_message():
+    app = make_app()
+    client = app.test_client()
+
+    response = client.get("/reset-password/not-a-valid-token", follow_redirects=True)
+
+    assert response.status_code == 200
+    assert b"This password reset link is invalid or has expired. Please request a new reset link." in response.data
+
+    with app.app_context():
+        db.session.remove()
+        db.drop_all()
+
+
 def test_profile_update_persists_portfolio_and_learning_goals():
     app = make_app()
     with app.app_context():

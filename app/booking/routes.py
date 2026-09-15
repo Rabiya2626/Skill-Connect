@@ -1,6 +1,6 @@
 from datetime import datetime, time, timedelta
 from secrets import token_urlsafe
-from flask import Blueprint, current_app, flash, redirect, render_template, request, url_for
+from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from flask_wtf.csrf import CSRFError
 from app.extensions import csrf, db
@@ -28,9 +28,27 @@ def _normalize_slot_value(value):
     return parsed
 
 
+BOOKING_DURATIONS = (30, 60, 90)
+
+
+def overlaps_existing_session(tutor_id, scheduled_at, duration, exclude_session_id=None):
+    """Return whether a proposed interval overlaps a pending or confirmed session."""
+    candidates = Session.query.filter(
+        Session.tutor_id == tutor_id,
+        Session.status.in_(("pending", "confirmed")),
+    )
+    if exclude_session_id is not None:
+        candidates = candidates.filter(Session.id != exclude_session_id)
+    proposed_end = scheduled_at + timedelta(minutes=duration)
+    return any(
+        scheduled_at < item.scheduled_at + timedelta(minutes=item.duration_minutes)
+        and proposed_end > item.scheduled_at
+        for item in candidates
+    )
+
+
 def open_slots(tutor, days=14, duration=60):
     now = datetime.utcnow(); slots = []
-    booked = {s.scheduled_at for s in Session.query.filter_by(tutor_id=tutor.user_id).filter(Session.status.in_(("pending", "confirmed")), Session.scheduled_at >= now).all()}
     # Until a tutor publishes their own hours, let learners request a weekday
     # slot. The tutor still has to explicitly accept every request.
     availability_windows = [
@@ -44,7 +62,8 @@ def open_slots(tutor, days=14, duration=60):
             current = datetime.combine(date, start_time)
             end = datetime.combine(date, end_time)
             while current + timedelta(minutes=duration) <= end:
-                if current > now and current not in booked: slots.append((current, slot_format))
+                if current > now and not overlaps_existing_session(tutor.user_id, current, duration):
+                    slots.append((current, slot_format))
                 current += timedelta(minutes=duration)
     return slots
 
@@ -79,13 +98,13 @@ def handle_csrf_error(error):
 def book(tutor_id):
     tutor = Tutor.query.filter_by(user_id=tutor_id).first()
     if tutor is None:
-        tutor = Tutor(user_id=tutor_id, approved_by_admin=False, avg_rating=0, session_count=0, response_rate=0)
+        tutor = Tutor(user_id=tutor_id, avg_rating=0, session_count=0, response_rate=0)
     user = tutor.user or db.session.get(User, tutor_id)
     if user is None or tutor_id == current_user.id or not user.is_active:
         return redirect(url_for("dashboard.index"))
     tutor.user = user
     skills = [u.skill for u in user.user_skills if u.type == "offering"]
-    exchange_skills = [u.skill for u in current_user.user_skills if u.type == "offering"]
+    exchange_skills = [u.skill for u in current_user.user_skills if u.type == "offering"] if current_user.role == "both" else []
     if request.method == "POST":
         scheduled_at_raw = request.form.get("scheduled_at")
         skill_id_raw = request.form.get("skill_id")
@@ -100,6 +119,9 @@ def book(tutor_id):
         except (TypeError, ValueError):
             flash("Please choose a valid skill, time, and duration.", "error")
             return redirect(url_for("booking.book", tutor_id=tutor_id))
+        if duration not in BOOKING_DURATIONS:
+            flash("Choose a supported session duration.", "error")
+            return redirect(url_for("booking.book", tutor_id=tutor_id))
         available_slots = open_slots(tutor, duration=duration)
         if scheduled_at is None or not any(_normalize_slot_value(slot[0]) == scheduled_at for slot in available_slots):
             flash("That slot is no longer available. Please choose another.", "error")
@@ -108,9 +130,16 @@ def book(tutor_id):
         if skill is None or not UserSkill.query.filter_by(user_id=tutor_id, skill_id=skill_id, type="offering").first():
             flash("Please choose a valid skill.", "error")
             return redirect(url_for("booking.book", tutor_id=tutor_id))
-        is_skill_exchange = bool(request.form.get("is_skill_exchange"))
+        booking_mode = request.form.get("booking_mode", "paid")
+        if booking_mode not in {"paid", "exchange"}:
+            flash("Choose a valid booking mode.", "error")
+            return redirect(url_for("booking.book", tutor_id=tutor_id))
+        is_skill_exchange = booking_mode == "exchange"
         exchange_skill_id = request.form.get("exchange_skill_id", type=int)
         if is_skill_exchange:
+            if current_user.role != "both":
+                flash("Skill exchanges are available only for users who teach and learn.", "error")
+                return redirect(url_for("booking.book", tutor_id=tutor_id))
             exchange_link = UserSkill.query.filter_by(
                 user_id=current_user.id, skill_id=exchange_skill_id, type="offering"
             ).first()
@@ -137,12 +166,29 @@ def book(tutor_id):
         db.session.add(Notification(user_id=current_user.id, type="booking_pending", message=learner_message, session_id=session.id))
         db.session.commit()
         return render_template("booking/confirmation.html", active_nav="sessions", session=session, tutor=tutor)
+    if not tutor.availability:
+        flash("Suggested weekday slot request hours are 09:00–17:00; the tutor confirms every request.", "warning")
     return render_template(
         "booking/book.html",
         active_nav="sessions",
         tutor=tutor,
         skills=skills,
         exchange_skills=exchange_skills,
-        slot_groups=group_slots_by_date(open_slots(tutor)),
+        slot_groups_by_duration={duration: group_slots_by_date(open_slots(tutor, duration=duration)) for duration in BOOKING_DURATIONS},
+        durations=BOOKING_DURATIONS,
         using_default_availability=not tutor.availability,
     )
+
+
+@booking_bp.route("/sessions/<int:session_id>/calendar")
+@login_required
+def calendar(session_id):
+    session = Session.query.filter_by(id=session_id).filter(
+        (Session.tutor_id == current_user.id) | (Session.learner_id == current_user.id)
+    ).first_or_404()
+    start = session.scheduled_at.strftime("%Y%m%dT%H%M%S")
+    end = (session.scheduled_at + timedelta(minutes=session.duration_minutes)).strftime("%Y%m%dT%H%M%S")
+    title = f"SkillConnect: {session.skill.name} with {session.tutor.name}"
+    location = session.meeting_url if session.format == "online" else "In person"
+    ics = "\r\n".join(("BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//SkillConnect//EN", "BEGIN:VEVENT", f"UID:skillconnect-{session.id}@skillconnect", f"DTSTART:{start}", f"DTEND:{end}", f"SUMMARY:{title}", f"LOCATION:{location}", f"DESCRIPTION:Session reference SC-{session.id:06d}", "END:VEVENT", "END:VCALENDAR", ""))
+    return Response(ics, mimetype="text/calendar", headers={"Content-Disposition": f'attachment; filename="skillconnect-SC-{session.id:06d}.ics"'})

@@ -8,6 +8,16 @@ from app.models import Skill, Tutor, TutorAvailability, User, UserSkill
 skills_bp = Blueprint("skills", __name__)
 LEVELS = {"Beginner", "Intermediate", "Advanced"}
 
+
+def allowed_skill_types(user):
+    if user.role == "learner":
+        return {"wanted"}
+    if user.role == "tutor":
+        return {"offering"}
+    if user.role == "both":
+        return {"offering", "wanted"}
+    return set()
+
 @skills_bp.route("/browse")
 @login_required
 def browse():
@@ -15,18 +25,16 @@ def browse():
     category = request.args.get("category", "")
     minimum_rating = request.args.get("minimum_rating", type=float)
     availability_format = request.args.get("format", "")
+    proficiency_level = request.args.get("level", "")
     sort = request.args.get("sort", "recommended")
-    query = (
-        User.query.join(UserSkill)
-        .join(Skill)
-        .join(Tutor, Tutor.user_id == User.id)
-        .filter(
-            UserSkill.type == "offering",
-            User.is_active.is_(True),
-            Tutor.approved_by_admin.is_(True),
-            User.id != current_user.id,
-        )
-    )
+    filters = [
+        UserSkill.type == "offering",
+        User.is_active.is_(True),
+        User.id != current_user.id,
+    ]
+    query = db.session.query(User.id.label("user_id")).join(UserSkill).join(Skill).join(
+        Tutor, Tutor.user_id == User.id
+    ).filter(*filters)
     if q:
         query = query.filter((User.name.ilike(f"%{q}%")) | (Skill.name.ilike(f"%{q}%")))
     if category:
@@ -34,36 +42,47 @@ def browse():
     if minimum_rating is not None:
         query = query.filter(Tutor.avg_rating >= minimum_rating)
     if availability_format in {"online", "in_person"}:
-        query = query.join(TutorAvailability).filter(
-            TutorAvailability.format.in_((availability_format, "either"))
+        query = query.filter(
+            db.exists().where(
+                (TutorAvailability.tutor_id == User.id)
+                & TutorAvailability.format.in_((availability_format, "either"))
+            )
         )
+    if proficiency_level in LEVELS:
+        query = query.filter(UserSkill.proficiency_level == proficiency_level)
     if sort == "rating":
-        query = query.order_by(Tutor.avg_rating.desc(), Tutor.session_count.desc())
+        order = [db.func.max(Tutor.avg_rating).desc(), db.func.max(Tutor.session_count).desc()]
     elif sort == "response":
-        query = query.order_by(Tutor.response_rate.desc(), Tutor.avg_rating.desc())
+        order = [db.func.max(Tutor.response_rate).desc(), db.func.max(Tutor.avg_rating).desc()]
+    elif sort == "sessions":
+        order = [db.func.max(Tutor.session_count).desc(), db.func.max(Tutor.avg_rating).desc()]
+    elif sort == "recent":
+        order = [db.func.max(User.created_at).desc()]
     else:
         wanted_ids = [item.skill_id for item in current_user.user_skills if item.type == "wanted"]
         if wanted_ids:
-            query = query.order_by(db.case((UserSkill.skill_id.in_(wanted_ids), 1), else_=0).desc(), Tutor.avg_rating.desc())
+            order = [db.func.max(db.case((UserSkill.skill_id.in_(wanted_ids), 1), else_=0)).desc(), db.func.max(Tutor.avg_rating).desc()]
         else:
-            query = query.order_by(Tutor.avg_rating.desc(), Tutor.session_count.desc())
-    tutors = query.distinct().all()
+            order = [db.func.max(Tutor.avg_rating).desc(), db.func.max(Tutor.session_count).desc()]
+    candidate_ids = query.group_by(User.id).order_by(*order).subquery()
+    tutors = User.query.join(candidate_ids, candidate_ids.c.user_id == User.id).all()
     return render_template(
         "skills/browse.html",
         active_nav="browse",
         tutors=tutors,
         categories=[s[0] for s in db.session.query(Skill.category).distinct().all()],
-        selected={"q": q, "category": category, "minimum_rating": minimum_rating, "format": availability_format, "sort": sort},
+        selected={"q": q, "category": category, "minimum_rating": minimum_rating, "format": availability_format, "level": proficiency_level, "sort": sort},
     )
 
 @skills_bp.route("/my-skills", methods=["GET", "POST"])
 @login_required
 def my_skills():
+    allowed_types = allowed_skill_types(current_user)
     if request.method == "POST":
         name = request.form.get("name", "").strip()
         skill_type = request.form.get("type")
         level = request.form.get("proficiency_level")
-        if not name or skill_type not in {"offering", "wanted"} or level not in LEVELS:
+        if not name or skill_type not in allowed_types or level not in LEVELS:
             flash("Choose a skill, type, and valid proficiency level.", "error")
             return redirect(url_for("skills.my_skills"))
         skill = Skill.query.filter(db.func.lower(Skill.name) == name.lower()).first()
@@ -78,11 +97,14 @@ def my_skills():
     availability = []
     if current_user.tutor:
         availability = current_user.tutor.availability
-    return render_template("skills/my_skills.html", active_nav="my_skills", availability=availability)
+    return render_template("skills/my_skills.html", active_nav="my_skills", availability=availability, allowed_skill_types=allowed_types)
 
 @skills_bp.post("/my-skills/<int:skill_id>/<skill_type>/delete")
 @login_required
 def delete_my_skill(skill_id, skill_type):
+    if skill_type not in allowed_skill_types(current_user):
+        flash("That skill direction is not available for your account role.", "error")
+        return redirect(url_for("skills.my_skills"))
     link = UserSkill.query.filter_by(user_id=current_user.id, skill_id=skill_id, type=skill_type).first_or_404()
     db.session.delete(link); db.session.commit(); flash("Skill removed.", "success")
     return redirect(url_for("skills.my_skills"))

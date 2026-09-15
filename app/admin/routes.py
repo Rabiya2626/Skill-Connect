@@ -2,7 +2,9 @@ from functools import wraps
 from flask import Blueprint, abort, flash, redirect, render_template, request, url_for
 from flask_login import current_user, login_required
 from app.extensions import db
-from app.models import Session, Skill, Tutor, User
+from datetime import datetime
+
+from app.models import Notification, Report, Session, Skill, Tutor, User
 
 admin_bp = Blueprint("admin", __name__)
 
@@ -17,30 +19,31 @@ def admin_required(view):
 @admin_bp.route("/admin")
 @admin_required
 def index():
-    tab = request.args.get("tab", "overview")
     query = request.args.get("q", "")
+    report_status = request.args.get("report_status", "")
+    report_severity = request.args.get("report_severity", "")
     users = User.query
     if query: users = users.filter((User.name.ilike(f"%{query}%")) | (User.email.ilike(f"%{query}%")))
-    return render_template("admin/index.html", active_nav="admin", tab=tab, users=users.order_by(User.created_at.desc()).all(), pending=Tutor.query.filter_by(approved_by_admin=False).all(), skills=Skill.query.order_by(Skill.name).all(), stats={"users": User.query.filter_by(is_active=True).count(), "skills": Skill.query.count(), "sessions": Session.query.count(), "pending": Tutor.query.filter_by(approved_by_admin=False).count()})
-
-@admin_bp.post("/admin/tutors/<int:user_id>/<action>")
-@admin_required
-def approve_tutor(user_id, action):
-    tutor = Tutor.query.get_or_404(user_id); tutor.approved_by_admin = action == "approve"; db.session.commit(); flash("Tutor approval updated.", "success")
-    return redirect(url_for("admin.index", tab="approvals"))
+    reports = Report.query
+    if report_status in {"open", "in_review", "resolved", "dismissed"}:
+        reports = reports.filter_by(status=report_status)
+    if report_severity in {"low", "medium", "high"}:
+        reports = reports.filter_by(severity=report_severity)
+    stats = {"users": User.query.count(), "tutors": Tutor.query.count(), "learners": User.query.filter(User.role.in_(("learner", "both"))).count(), "sessions": Session.query.count(), "completed": Session.query.filter_by(status="completed").count(), "skills": Skill.query.count(), "reports": Report.query.filter(Report.status.in_(("open", "in_review"))).count()}
+    return render_template("admin/index.html", active_nav="admin", users=users.order_by(User.created_at.desc()).all(), skills=Skill.query.order_by(Skill.name).all(), reports=reports.order_by(Report.created_at.desc()).all(), stats=stats, selected_reports={"status": report_status, "severity": report_severity})
 
 @admin_bp.post("/admin/users/<int:user_id>/deactivate")
 @admin_required
 def deactivate_user(user_id):
     user = User.query.get_or_404(user_id)
     if user.id != current_user.id: user.is_active = False; db.session.commit(); flash("Account deactivated.", "success")
-    return redirect(url_for("admin.index", tab="users"))
+    return redirect(url_for("admin.index") + "#users")
 
 @admin_bp.post("/admin/skills")
 @admin_required
 def add_skill():
     db.session.add(Skill(name=request.form["name"].strip(), category=request.form["category"].strip(), description=request.form.get("description", ""))); db.session.commit(); flash("Skill added.", "success")
-    return redirect(url_for("admin.index", tab="skills"))
+    return redirect(url_for("admin.index") + "#skills")
 
 @admin_bp.post("/admin/users/<int:user_id>/skills/<int:skill_id>/<skill_type>/verify")
 @admin_required
@@ -52,4 +55,18 @@ def verify_user_skill(user_id, skill_id, skill_type):
     link.is_verified = True
     db.session.commit()
     flash("Skill verification badge awarded.", "success")
-    return redirect(url_for("admin.index", tab="users"))
+    return redirect(url_for("admin.index") + "#users")
+
+
+@admin_bp.post("/admin/reports/<int:report_id>")
+@admin_required
+def update_report(report_id):
+    report = Report.query.get_or_404(report_id)
+    status = request.form.get("status")
+    if status not in {"open", "in_review", "resolved", "dismissed"}:
+        abort(400)
+    report.status = status
+    report.resolved_at = datetime.utcnow() if status in {"resolved", "dismissed"} else None
+    db.session.commit()
+    flash("Report status updated.", "success")
+    return redirect(url_for("admin.index") + "#reports")

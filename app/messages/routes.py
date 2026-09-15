@@ -6,6 +6,22 @@ from app.messages import messages_bp
 from app.models import Message, Notification, Session
 
 
+@messages_bp.route("/messages")
+@login_required
+def index():
+    sessions = Session.query.filter(
+        (Session.tutor_id == current_user.id) | (Session.learner_id == current_user.id)
+    ).order_by(Session.updated_at.desc()).all()
+    conversations = []
+    for session in sessions:
+        latest = Message.query.filter_by(session_id=session.id).order_by(Message.created_at.desc()).first()
+        if latest:
+            other = session.learner if session.tutor_id == current_user.id else session.tutor
+            unread = Message.query.filter_by(session_id=session.id, is_read=False).filter(Message.sender_id != current_user.id).count()
+            conversations.append({"session": session, "other": other, "latest": latest, "unread": unread})
+    return render_template("messages/index.html", active_nav="messages", conversations=conversations)
+
+
 @messages_bp.route("/sessions/<int:session_id>/messages", methods=["GET", "POST"])
 @login_required
 def thread(session_id):

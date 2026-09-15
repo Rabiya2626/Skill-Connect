@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Messages — SkillConnect{% endblock %}
+{% block content %}
+<span class="eyebrow">Conversations</span><h1 style="font-size:26px;margin-top:10px">Messages</h1>
+<section class="card table-card" style="margin-top:20px">
+  <div class="table-head"><h2>Your session conversations</h2></div>
+  {% for item in conversations %}
+  <a class="session-row" href="{{ url_for('messages.thread', session_id=item.session.id) }}">
+    <div class="avatar">{{ item.other.name[:2]|upper }}</div><div class="who"><div class="n">{{ item.other.name }} · {{ item.session.skill.name }}</div><div class="s">{{ item.latest.body[:100] }}</div></div>
+    {% if item.unread %}<span class="badge badge-amber">{{ item.unread }} new</span>{% endif %}<span class="mono">{{ item.latest.created_at.strftime('%d %b %H:%M') }}</span>
+  </a>
+  {% else %}<p style="padding:24px">No conversations yet. Once you book a session, messages will appear here.</p>{% endfor %}
+</section>
+{% endblock %}

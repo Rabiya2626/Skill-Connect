@@ -39,15 +39,24 @@ def create_app(config_object=DevelopmentConfig):
     app.register_blueprint(admin_bp)
 
     @app.context_processor
-    def inject_notification_count():
+    def inject_navigation_counts():
         if not current_user.is_authenticated:
-            return {"unread_notification_count": 0}
-        from app.models import Notification
+            return {"unread_notification_count": 0, "unread_message_count": 0, "session_action_count": 0}
+        from app.models import Message, Notification, Session
 
         return {
             "unread_notification_count": Notification.query.filter_by(
                 user_id=current_user.id, is_read=False
-            ).count()
+            ).count(),
+            "unread_message_count": Message.query.join(Session).filter(
+                Message.is_read.is_(False),
+                Message.sender_id != current_user.id,
+                (Session.tutor_id == current_user.id) | (Session.learner_id == current_user.id),
+            ).count(),
+            "session_action_count": Session.query.filter(
+                Session.tutor_id == current_user.id,
+                Session.status == "pending",
+            ).count(),
         }
 
     return app

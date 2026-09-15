@@ -15,4 +15,5 @@ def home():
         active_students=User.query.filter_by(is_active=True).count(),
         skills_listed=Skill.query.count(),
         sessions_this_week=Session.query.filter(Session.scheduled_at >= week_start).count(),
+        categories=[row[0] for row in Skill.query.with_entities(Skill.category).distinct().order_by(Skill.category).limit(6)],
     )

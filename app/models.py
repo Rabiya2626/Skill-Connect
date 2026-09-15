@@ -68,7 +68,6 @@ class UserSkill(TimestampMixin, db.Model):
 class Tutor(TimestampMixin, db.Model):
     __tablename__ = "tutors"
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"), primary_key=True)
-    approved_by_admin = db.Column(db.Boolean, nullable=False, default=False)
     avg_rating = db.Column(db.Numeric(3, 2), nullable=False, default=0)
     session_count = db.Column(db.Integer, nullable=False, default=0)
     response_rate = db.Column(db.Numeric(5, 2), nullable=False, default=0)
@@ -123,6 +122,12 @@ class Session(TimestampMixin, db.Model):
     is_skill_exchange = db.Column(db.Boolean, nullable=False, default=False)
     exchange_skill_id = db.Column(db.Integer, db.ForeignKey("skills.id"))
     meeting_url = db.Column(db.String(500))
+    tutor_joined_at = db.Column(db.DateTime)
+    learner_joined_at = db.Column(db.DateTime)
+    tutor_left_at = db.Column(db.DateTime)
+    learner_left_at = db.Column(db.DateTime)
+    both_joined_at = db.Column(db.DateTime)
+    meeting_closed_at = db.Column(db.DateTime)
     tutor = db.relationship("User", foreign_keys=[tutor_id])
     learner = db.relationship("User", foreign_keys=[learner_id])
     skill = db.relationship("Skill", foreign_keys=[skill_id])
@@ -155,6 +160,22 @@ class Notification(TimestampMixin, db.Model):
     message = db.Column(db.String(500), nullable=False)
     is_read = db.Column(db.Boolean, nullable=False, default=False)
     session_id = db.Column(db.Integer, db.ForeignKey("sessions.id"), index=True)
+    session = db.relationship("Session")
+
+
+class Report(TimestampMixin, db.Model):
+    __tablename__ = "reports"
+    id = db.Column(db.Integer, primary_key=True)
+    reporter_id = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=False, index=True)
+    reported_user_id = db.Column(db.Integer, db.ForeignKey("users.id"), index=True)
+    session_id = db.Column(db.Integer, db.ForeignKey("sessions.id"), index=True)
+    category = db.Column(db.String(80), nullable=False)
+    description = db.Column(db.Text, nullable=False)
+    severity = db.Column(db.Enum("low", "medium", "high"), nullable=False, default="medium")
+    status = db.Column(db.Enum("open", "in_review", "resolved", "dismissed"), nullable=False, default="open")
+    resolved_at = db.Column(db.DateTime)
+    reporter = db.relationship("User", foreign_keys=[reporter_id])
+    reported_user = db.relationship("User", foreign_keys=[reported_user_id])
     session = db.relationship("Session")
 
 
